@@ -19,4 +19,10 @@ We further use python
 developed by Grahame Bowland for computing the outcome of such
 an election.
 
+and 
+[code and materials](https://github.com/berjc/election-engine)
+developed by Berj K Chilingirian, Zara Perumal, and Eric C Huppert as a framework for election auditing
+
+Requires python 3
+
 
