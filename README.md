@@ -1,6 +1,6 @@
 # 2016-aus-senate-audit
 
-This directory is to support work on auditing on auditing
+This directory is to support work on auditing
 the 2016 Australian Senate elections.
 
 The work is joint with Vanessa Teague (U. Melbourne), Philip Stark (UC Berkeley),
