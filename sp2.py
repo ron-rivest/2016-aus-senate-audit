@@ -32,7 +32,6 @@
 
 import copy
 import random
-random.seed(1) # Make results deterministic.
 
 try:
     import scipy.stats
@@ -40,7 +39,14 @@ try:
 except ImportError:
     # This is necessary when using pypy, because there's no scipy
     pass
+
 import numpy
+
+##############################################################################
+## Ensure that all randomness here is "pseudo", so results are consistent
+##############################################################################
+random.seed(1)            # Make results deterministic.
+numpy.random.seed(1)      # Make results deterministic.
 
 ##############################################################################
 ## compute preference matrix from a profile of ballots
