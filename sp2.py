@@ -1,12 +1,12 @@
 # sp2.py
 # Ronald L. Rivest (joint work with Kate Yu)
-# July 24, 2016
+# July 25, 2016
 
 # Basic problem:
 #    Sample a profile according to given marginals (pairwise preferences)
 #    (Def: a profile is a set of ballots. Really a list or multi-set.)
 #    Ballots are preferential ballots: list of candidates in decreasing
-#       order of preference.
+#       order of preference.  (May be partial on input.)
 #    Marginals are m x m matrix A (where m = number of candidates) showing
 #       number A[i][j] of ballots preferring candidate i to candidate j.
 
@@ -24,6 +24,7 @@
 # To compute variants of S:
 #   Given a set (sample) B of preferential ballots for m candidates
 #   Compute pairwise preferences (A[i][j] is number preferring i to j)
+#       (If input ballot is partial, randomly complete it to full ballot here.)
 #   Tweak pairwise preferences to get profile Bk "somewhat like" B.
 #       Treat each pair Bk[i][j], Bk[j][i] as drawn from beta distribution.
 #           Note that Bk[i][j] + Bk[j][i] is constant = # of ballots n.
@@ -32,6 +33,7 @@
 
 import copy
 import random
+import time
 
 try:
     import scipy.stats
@@ -52,23 +54,42 @@ numpy.random.seed(1)      # Make results deterministic.
 ## compute preference matrix from a profile of ballots
 ##############################################################################
 
-def prefs(B):
+def prefs(B,partial_ballots=False):
     """ 
-    Input B is a list of ballots; each ballot is a permutation of range(m).
-    Return matrix A of prefs according to ballots in B 
-    A[a][b] is number of ballots preferring a to b
+    Input:
+        B is a list of ballots; each ballot is a permutation of range(m)
+             (or a prefix of such a permutation if ballots may be partial).
+        partial_ballots is True if partial ballots may be present
+    Return:
+        matrix A of prefs according to ballots in B 
+        A[a][b] is number of ballots preferring a to b
+    Procedure:
+        partial ballots are randomly extended to make complete ballots
     """
 
-    m = len(B[0])
-
-    for ballot in B:
-        assert sorted(ballot) == range(m)
+    if partial_ballots==False:
+        m = len(B[0])
+        for ballot in B:
+            assert sorted(ballot) == range(m)
+    else:
+        m = 1+max([max(ballot) for ballot in B])
+        newB = []
+        for ballot in B:
+            if len(ballot)==m:
+                newB.append(ballot)
+                continue
+            missingset = set(range(m))-set(ballot)
+            missinglist = list(missingset)
+            random.shuffle(missinglist)
+            newballot = ballot + missinglist
+            newB.append(newballot)
+        B = newB
 
     A = [ [0 for j in range(m)] for i in range(m) ]
     for ballot in B:
-        for i in range(m):
+        for i in range(len(ballot)):
             a = ballot[i]
-            for j in range(i+1, m):
+            for j in range(i+1, len(ballot)):
                 b = ballot[j]
                 A[a][b] += 1
     return A 
@@ -101,6 +122,9 @@ for _ in range(500):
     random.shuffle(ballot)
     B5.append(ballot)
 
+B6 = [ [ 0, 2, 1 ],    # partial ballots
+       [ 3 ],
+       [ 2, 3] ]
 
 ##############################################################################
 ## beta distributions
@@ -330,20 +354,25 @@ def generate_profile(A, n, printing_wanted=True):
             for c in row:
                 print "%6d "%c,
             print
-    print "differences in matrix entries from desired matrix:"
+    if printing_wanted:
+        print "differences in matrix entries from desired matrix:"
     difference_matrix = []
     for x in xrange(len(A2)):
         a2_row = A2[x]
         target_row = target[x]
         difference_matrix.append([])
-        print "%2d: " %x,
+        if printing_wanted:
+            print "%2d: " %x,
         for c1, c2 in zip(a2_row, target_row):
             difference_matrix[x].append(abs(c1-c2))
-            print "%6d " %(c1-c2),
-        print
-    print "sum of absolute values of deviations:"
+            if printing_wanted:
+                print "%6d " %(c1-c2),
+        if printing_wanted:
+            print
     deviations = sum(map(sum, difference_matrix))
-    print deviations
+    if printing_wanted:
+        print "sum of absolute values of deviations:"
+        print deviations
     return deviations
 
     # if m>12:
@@ -359,10 +388,12 @@ def generate_profile(A, n, printing_wanted=True):
 ## preferences to a given sample B of ballots
 ##############################################################################
 
-def sample(B, n, printing_wanted=True):
+def sample(B, n, partial_ballots=True, printing_wanted=True):
     """ 
     Input: B is list of ballots (over candidates range(m)).
            n is desired number of ballots to generate and return.
+           partial_ballots is True if partial ballots may be present on input
+                 and if they are OK to output
     Output: list S of n ballots that are "like" those in B,
             in the sense that matrix of prefs for S is close to 
             (percentage-wise) those in B. 
@@ -383,8 +414,8 @@ def sample(B, n, printing_wanted=True):
         for ballot in B:
             print ballot
 
-    A = prefs(B)
-    generate_tweaked_profile(A, n)
+    A = prefs(B, partial_ballots)
+    generate_tweaked_profile(A, n, printing_wanted)
 
 def test_sample():
     sample(B1, 100)
@@ -392,7 +423,23 @@ def test_sample():
     sample(B3, 100)
     sample(B4, 100)
 
-test_sample()
+# test_sample()
+
+def test_sample_2(m):
+    print "test_sample_2: generating 10**d ballots"
+    for d in range(1,6):
+        print "d=",d,
+        t0 = time.time()
+        B = []
+        for t in range(200):
+            ballot = range(m)
+            random.shuffle(ballot)
+            B.append(ballot)
+        sample(B, 10**d, printing_wanted=False)
+        t1 = time.time()
+        print "done in %d seconds."%(int(t1-t0))
+
+test_sample_2(100)
 
 ##############################################################################
 ## end of profile-generating code
