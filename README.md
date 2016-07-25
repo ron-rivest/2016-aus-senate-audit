@@ -8,10 +8,11 @@ Zara Perumal (MIT), Ian Gordon (U. Melbourne), Damjan Vukcevic, and
 Ronald L. Rivest (MIT).
 
 One approach explored here is to use "black-box auditing" methods
-developed by Stark and Rivest (unpublished).  These are ballot-polling
-methods (not comparison audits).  This approach also uses methods
-developed by Rivest and Yu for computing a "variant sample" of a set
-of ranked-choice ballots.
+developed by Stark and Rivest (unpublished, although mentioned in
+[this talk](http://people.csail.mit.edu/rivest/pubs.html#Riv16x)).
+These are ballot-polling methods (not comparison audits).  This
+approach also uses methods developed by Rivest and Yu for computing a
+"variant sample" of a set of ranked-choice ballots.
 
 Another approach we may explore is the 
 ["Bayesian audit"](http://people.csail.mit.edu/rivest/pubs.html#RS12)
