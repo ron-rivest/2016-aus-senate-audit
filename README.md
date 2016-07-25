@@ -1,7 +1,7 @@
 # 2016-aus-senate-audit
 
 This directory is to support work on the possible auditing
-the 2016 Australian Senate elections.
+of the 2016 Australian Senate elections.
 
 The work is joint with Vanessa Teague (U. Melbourne), Philip Stark (UC Berkeley),
 Zara Perumal (MIT), Ian Gordon (U. Melbourne), Damjan Vukcevic, and
