@@ -1,0 +1,8 @@
+# "rivest" subdirectory of 2016-aus-senate-audit
+
+This is a place for Ron Rivest to store some local files of possible interest.
+
+Current contents:
+
+``sp2.py``      slightly modified copy of original "variant sample" routine of Rivest and Yu.
+
