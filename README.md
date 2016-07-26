@@ -7,16 +7,17 @@ This work is joint with Vanessa Teague (U. Melbourne), Philip Stark (UC Berkeley
 Zara Perumal (MIT), Ian Gordon (U. Melbourne), Damjan Vukcevic, and
 Ronald L. Rivest (MIT).
 
-One approach explored here is to use "black-box auditing" methods
-developed by Stark and Rivest (unpublished, although mentioned in
-[this talk](http://people.csail.mit.edu/rivest/pubs.html#Riv16x)).
-These are ballot-polling methods (not comparison audits).  This
-approach also uses methods developed by Rivest and Yu for computing a
-"variant sample" of a set of ranked-choice ballots.
-
-Another approach we expect to explore is the 
+One approach we plan to explore is the 
 ["Bayesian audit"](http://people.csail.mit.edu/rivest/pubs.html#RS12)
 method of Rivest and Shen.
+
+Another family of approaches we may explore are the "black-box auditing" methods
+developed by Stark and Rivest (unpublished, although mentioned in
+[this talk](http://people.csail.mit.edu/rivest/pubs.html#Riv16x)).
+These are ballot-polling methods (not comparison audits).  
+These approaches can use a variety of methods for computing "variant samples",
+since as a Polya's Urn approach, or the
+method developed by Rivest and Yu.
 
 We use with appreciation python [code and
 materials](https://github.com/grahame/dividebatur) developed by
