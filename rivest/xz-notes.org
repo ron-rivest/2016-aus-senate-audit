@@ -1,0 +1,7 @@
+Notes on decompressing .xz format files on mac:
+
+-- Wed 27 Jul 2016
+
+   "The Unarchiver" (available from App Store) works well.
+
+

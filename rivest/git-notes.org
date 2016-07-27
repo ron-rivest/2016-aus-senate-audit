@@ -1,0 +1,24 @@
+Notes on using git for this project.
+
+-- Wed 27 July 2016
+
+   From Zara's email of today:
+
+        It looks like the magic commands are:
+
+        To clone the repos:
+
+           git clone --recursive  https://github.com/ron-rivest/2016-aus-senate-audit.git 
+
+        To pull future updates: 
+
+           git pull --recurse-submodules 
+
+        To pull the latest working versions of all the submodules use:
+
+           git submodule foreach git pull origin master
+ 
+        To add a submodule:
+  
+           git submodule add https://github.com/grahame/dividebatur.git
+
