@@ -4,7 +4,8 @@ This repository supports the possible auditing of the 2016 Australian
 Senate elections.
 
 This work is joint with Vanessa Teague (U. Melbourne), Philip Stark (UC Berkeley),
-Zara Perumal (MIT), Ian Gordon (U. Melbourne), Damjan Vukcevic, and
+Zara Perumal (MIT), Berj K Chilingirian (MIT),
+Ian Gordon (U. Melbourne), Damjan Vukcevic, and
 Ronald L. Rivest (MIT).
 
 One approach we plan to explore is the 

@@ -8,4 +8,8 @@ Current contents:
                         This is probably not going to be used, as it is rather slow.
                         We'll use the Bayesian method instead.
 
-``git-notes.org''
+``git-notes.org''       Notes on using ``git''.
+
+``xz-notes.org''        Notes on using compression scheme ``xz''
+
+
