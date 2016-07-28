@@ -30,10 +30,20 @@ We also appreciate and use the
 [code and materials](https://github.com/berjc/election-engine)
 developed by Berj K Chilingirian, Zara Perumal, and Eric C Huppert as a framework for election auditing.
 
-This work is all in python, and requires python 3.
-
 Further materials related to post-election audits can be found on the
 [voting-related web page of Philip B. Stark](https://www.stat.berkeley.edu/~stark/Vote/index.htm).
 
 
+## Source
+
+Requires python 3
+
+To clone repo with submodules:
+```
+git clone --recursive  https://github.com/ron-rivest/2016-aus-senate-audit.git 
+````
+To pull the latest working versions of submodules use:
+```
+git submodule foreach git pull origin master
+```
 
