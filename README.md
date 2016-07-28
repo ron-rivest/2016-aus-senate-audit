@@ -21,8 +21,11 @@ method developed by Rivest and Yu.
 
 We use with appreciation python [code and
 materials](https://github.com/grahame/dividebatur) developed by
-Grahame Bowland for computing the outcome of such an election,
-as well as
+Grahame Bowland for computing the outcome of such an election.
+Some output from his program can be found
+[here](https://sirgraha.me/senate2016/).
+
+We also appreciate and use the 
 [code and materials](https://github.com/berjc/election-engine)
 developed by Berj K Chilingirian, Zara Perumal, and Eric C Huppert as a framework for election auditing.
 

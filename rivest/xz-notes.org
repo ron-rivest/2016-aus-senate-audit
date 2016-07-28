@@ -4,4 +4,6 @@ Notes on decompressing .xz format files on mac:
 
    "The Unarchiver" (available from App Store) works well.
 
+   Note that dividebatur uses the python module lzma to read these files.
+
 
