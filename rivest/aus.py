@@ -44,13 +44,17 @@ class SimulatedElection(Election):
         """ 
         return list of up to k simulated ballots for testing purposes 
         or [] if no more ballots available
+        These ballots are biased so (1,2,...,m) is likely to be the winner
+        More precisely, for each ballot candidate i is given a value i+v*U
+        where U = uniform(0,1).  Then candidates are sorted in order of these
+        values.
         """
         ballots = []
         v = 5.0   # noise level
         k = min(k, self.n-self.ballots_drawn)
         for _ in range(k):
             L = [ (idx+v*random.random(), c) for idx, c in enumerate(self.candidates) ]
-            ballot = [ c for (v, c) in sorted(L,reverse=True) ]
+            ballot = [ c for (val, c) in sorted(L) ]
             ballots.append(ballot)
         self.ballots_drawn += k
         return ballots
@@ -66,7 +70,9 @@ class SimulatedElection(Election):
         for ballot in sample:
             for idx, candidate in enumerate(ballot):
                 counter[candidate] += idx
-        return tuple(c for (c, count) in counter.most_common())
+        L = counter.most_common()
+        L.reverse()
+        return tuple(c for (c, count) in L)
 
 
 ##############################################################################
@@ -79,10 +85,6 @@ class SimulatedElection(Election):
 #    -- making up a list of "prior ballots" expressing
 #       our Bayesian prior
 #    -- (possibly re-weighting ballots?)
-
-def copy_ballot(b):
-    return copy.deepcopy(b)
-
 
 ##############################################################################
 # Implementation of polya's urn
@@ -97,7 +99,7 @@ def urn(election, sample, r):
 
     L = election.prior_ballots + sample
     for _ in range(r-len(sample)):
-        L.append(copy_ballot(random.choice(L)))
+        L.append(random.choice(L))
     return L[len(election.prior_ballots):]
 
 def test_urn(election):
@@ -123,10 +125,9 @@ def audit(election, alpha=0.05, k=4, trials=100):
         trials       # trials per sample
     """
     print("audit")
-
-    # get basic election info
-    candidates = election.candidates
-    n = election.n               
+    print("Candidates are:", election.candidates)
+    print("Number of ballots cast:", election.n)
+    print("Number of trials per sample:", trials)
 
     # overall audit loop
     sample = []
@@ -140,26 +141,26 @@ def audit(election, alpha=0.05, k=4, trials=100):
             break
 
         sample.extend(sample_increment)
-        print("sample size is now", len(sample))
+        print("sample size is now", len(sample),":")
 
         # run trials in Bayesian manner
         # we assume that each outcome is 
         # a list or tuple of candidates who have been elected, 
         # in some sort of canonical or sorted order.
         # We can thus test for equality of outcomes.
-        outcomes = [election.scf(urn(election, sample, n))
+        outcomes = [election.scf(urn(election, sample, election.n))
                     for t in range(trials)]
 
         # find most common outcome and its number of occurrences
         best, freq = collections.Counter(outcomes).most_common(1)[0]
-        print(best, freq)
+        print("    most common winner =",best, "freq =",freq)
 
         # stop if best occurs almost always
         if freq >= trials*(1.0-alpha):
             print("Stopping: audit confirms outcome:", best)
             break
 
-audit(SimulatedElection(4,100))
+audit(SimulatedElection(4,10000))
 
           
         
