@@ -47,9 +47,10 @@ class SimulatedElection(Election):
         if random.random()<0.01:
             return []
         ballots = []
+        v = 5.0   # noise level
         for _ in range(k):
-            ballot = list(self.candidates[:])
-            random.shuffle(ballot)
+            L = [ (idx+v*random.random(), c) for idx, c in enumerate(self.candidates) ]
+            ballot = [ c for (v, c) in sorted(L,reverse=True) ]
             ballots.append(ballot)
         return ballots
     
@@ -105,12 +106,12 @@ def test_urn(election):
     sample = election.draw_ballots(k)
     print(urn(election, sample, r))
 
-test_urn(SimulatedElection(3,36))
+# test_urn(SimulatedElection(3,36))
 
 ##############################################################################
 # Implementation of audit
 
-def audit(election, alpha=0.05, k=4, trials=20):
+def audit(election, alpha=0.05, k=4, trials=100):
     """ 
     Bayesian audit of given election 
 
@@ -138,16 +139,15 @@ def audit(election, alpha=0.05, k=4, trials=20):
             break
 
         sample.extend(sample_increment)
-        print("sample size is", len(sample))
-        # print("sample is:", sample)
+        print("sample size is now", len(sample))
 
         # run trials in Bayesian manner
-        outcomes = [election.scf(urn(election, sample, n))
-                    for t in range(trials)]
         # we assume that each outcome is 
         # a list or tuple of candidates who have been elected, 
         # in some sort of canonical or sorted order.
         # We can thus test for equality of outcomes.
+        outcomes = [election.scf(urn(election, sample, n))
+                    for t in range(trials)]
 
         # find most common outcome and its number of occurrences
         best, freq = collections.Counter(outcomes).most_common(1)[0]
