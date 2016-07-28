@@ -38,20 +38,21 @@ class SimulatedElection(Election):
         self.candidates = list(range(1,self.m+1))  # {1, 2, ..., m}
         self.n = n                                 # number of cast ballots
         self.prior_ballots = [ (c,) for c in self.candidates ] # one for each
+        self.ballots_drawn = 0                     # cumulative
 
     def draw_ballots(self, k):
         """ 
         return list of up to k simulated ballots for testing purposes 
         or [] if no more ballots available
         """
-        if random.random()<0.01:
-            return []
         ballots = []
         v = 5.0   # noise level
+        k = min(k, self.n-self.ballots_drawn)
         for _ in range(k):
             L = [ (idx+v*random.random(), c) for idx, c in enumerate(self.candidates) ]
             ballot = [ c for (v, c) in sorted(L,reverse=True) ]
             ballots.append(ballot)
+        self.ballots_drawn += k
         return ballots
     
     def scf(self, sample):
@@ -59,7 +60,7 @@ class SimulatedElection(Election):
         Return result of scf (social choice function) on this sample. 
 
         Here we use Borda count as a scf.
-        Returns tuple in decreasing order.
+        Returns tuple in decreasing order of candidate popularity.
         """
         counter = collections.Counter()
         for ballot in sample:
