@@ -1,0 +1,233 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+
+\newtheorem{lemma}{Lemma}
+
+\newcommand{\VTNote}[1]{{\it(VT: #1)}}
+
+\begin{document}
+
+\title{Auditing Australian Senate Ballots}
+
+\section{Introduction}
+Election auditing is well understood for plurality elections but difficult for complex voting schemes.  The Australian Senate uses the Single Transferable Vote (STV).  The data digitization is partially automated (which is a good thing), and the count itself is entirely automated.  There are many characteristics that make auditing challenging:
+
+\begin{itemize}
+\item Calculating winning margins for STV is NP hard in general, and the parameters of Australian elections (sometimes more than 150 candidates) make exact solutions infeasible in practice.  There are not even efficient methods for reliably computing good bounds. 	
+\item Since there are sometimes millions of votes in one constituency, a full hand count is infeasible.
+\item In practice the margins can sometimes be remarkably small.  For example, in Western Australia in 2013 a single lost box of ballots was found to be enough to change the election outcome.  In Tasmania in 2016, the final seat was determined by a difference of 141 votes 
+(a margin of 71) out of over 300,000.	
+\end{itemize}
+
+This makes it difficult to fit in with existing methods for risk limiting audits. If the detected error rate is large enough
+that a proper RLA (or Bayesian audit) would resort to a full recount, it's not clear what to do.  
+
+Although the Senate digitisation and counting process has been partially automated before, recent changes to the voting rules mean that an undetected error in the electronic processing has a much greater potential to affect an outcome than before.
+
+This paper describes two main suggested approaches to auditing the paper evidence of Australian Senate votes.  
+\begin{itemize}
+	\item Bayesian audits (cite Rivest \& Shen)
+	\item Heuristic search for small margins, followed by traditional audit.
+\end{itemize}
+
+Both amount to looking for small, unnoticed ways to change the election outcome, and trying to detect whether there were enough errors in the digitizing step to have shifted the apparent outcome away from that (other, correct) one.
+This would be the first time these sort of auditing steps are
+being applied, and so this year's efforts would be much more
+``exploratory'' in character than ``authoritative''.  We hope to be able to perform two or more kinds of audits on the same samples.  However, we do not even know, at the time of writing, whether any audit will be permitted at all.  We also describe a simple capped scheme.
+
+\subsection{Bayesian Audits} The Bayesian audit (cite Rivest \& Shen) should give some evidence that small changes to the realization of the ballots could alter the results. 
+
+The simple version amounts to a bootstrap, treating the population of reported ballots as
+if it is the (prior) probability distribution of ballots, and then seeing how often one gets the same result for samples drawn from that prior. 
+
+A more complex version makes small sample of the paper ballot data, then uses this to generate more ballots at random.  We then consider how many of the resulting datasets get an outcome different from the announced one.  \VTNote{Need to add more detail and a clearer expl.}
+
+\subsection{Upper bounds on the margin plus traditional audits}
+We have developed some powerful heuristics for searching for upper bounds on the manipulation.  One technique is an extension of Carey's winner elimination upper bound (cite Carey EVT '11).  The other consists of extending techniques for computing the IRV margin of victory to the last rounds of an STV count.  In either case, we can guarantee that the solution we find is genuine, {\it i.e.} a true way to change the outcome with that number of ballots, but we can't guarantee that it is minimal.
+
+
+We can approach this from either direction. 
+%Given the high error rate we expect, compared to the number of %errors required to change the outcome, 
+We could conduct a "negative audit" of the following kind.  
+This produces either evidence that the error rate is too small to matter or evidence that it is large enough that it could matter.
+
+Given some upper bounds, on technique for auditing is:
+
+Suppose there are N ballots in all.
+
+Suppose we know that the outcome could be altered by altering no more than X ballots in all, provided those ballots were suitably chosen. That is, we think we have an upper bound on the margin, rather than a lower bound. Suppose
+we think the true ballot error rate p (ballots with errors divided by total ballots, no matter how many errors each ballot has) is $q$, with $qN \gg X$; that is, we think the error rate is large enough that the outcome could easily be wrong.  Then a modest sample
+of size n should let us show infer with high confidence that pN > X. The sample size I have in mind is on the order of n=500 or n=1000. A lower 99\% confidence bound for p if we find 3 ballots with errors in a sample of size 500 is about 0.0009, more than double
+what's needed to account for the "margin" of 141 votes. 3 errors in a sample size of 1000 would give a lower bound of 0.00044, which is still higher than
+141/339,159, which is 0.00042.  If we did find errors at about that rate, it would be strong evidence that a full hand count is warranted.
+
+\VTNote{Detail: what about errors that really don't matter?  Not sure how we identify them, but any omissions would help.}
+
+\subsection{A simple capped scheme}
+We may end up doing something much simpler this time: we
+could imagine having a ``cap'' on the number of randomly-chosen 
+paper ballots to be examined, and then accepting the fact that
+the audit results may provide less certainty than an uncapped
+audit would provide.
+
+For example, you could go with a fixed sample size of 14,000
+ballots (i.e. 0.1\% of the cast ballots), which is pretty small, but
+maybe its small size would help sell the idea.  We draw that
+many ballots at random and examine them all.
+
+This gives a way to estimate the error rate, which, if it is large, would give a strong argument for larger audits in the
+future.
+
+You can also derive some partial confidence measures from the
+given sample.  For example, you could list, for each candidate,
+the \% of the time that candidate was elected across the Bayesian
+experiments.  (Each experiment starts with a small urn filled with
+the 14000 ballots, plus perhaps some prior ballots, and expands
+it out to a full-sized profile of 14M ballots with a polya's urn
+method or equivalent.  This is for a nationwide election; for the
+senate the full-size profiles are the size of each senate district.)
+Depending on the computation time involved, we might run say
+100 such experiments.  So, you might have a final output that says:
+
+Joe Jones     99.1 \% \\
+Bob Smith     96.2 \% \\
+Lila Bean       82.1 \% \\
+......
+Rob Meek        2.1 \% \\ 
+Sandy Slip       0.4 \%   \\
+Sara Tune        0.0 \%   \\
+
+Such results are meaningful at a human level, and show
+what can be reasonably concluded from the small sample.
+This allows us to have a commitment to a given
+level of audit effort, rather than a commitment to a given level
+of audit assurance, and then give results that say something about
+the assurance you have obtained for that level of effort.
+
+Since time is very short, and the uncertainty of more rigorous audit methods is a major drawback, this alternative might be the best for this year.
+
+\section{A description of the Senate screen-based verification process and an explanation of why its integrity guarantees are not sufficient}
+\VTNote{Might ask Chris Culnane to write this.  Though really, ``it's not software independent,'' about sums it up.  Is this necessary/useful for a tech report?  Certainly seems to need to be communicated somehow, since they apparently think that sprinkling digital signatures everywhere will solve the problem.}
+
+\section{Bayesian Audits and how to use them in the Australian Senate}
+\VTNote{TODO.  Write more here!  Much interesting stuff done.  Looking forward to hearing what happens on the Tasmanian data!}
+
+
+\section{Heuristics for upper bounds on STV margins}
+% We can use text from the RealSTVMargins paper 
+\VTNote{Add a discussion on Michelle's method for finding upper bounds by looking only at the last few (20 or so) rounds.}
+
+This section explains a way of searching for small manipulations in STV elections, then suggests how this could be included in an audit.  The result is not really a risk-limiting audit, but rather an audit that would be risk limiting if certain assumptions are true.  The assumptions will be precise but computationally intractable to check. 
+
+The idea generalises Cary's ``winner-elimination upper bound'' to STV.  The high-level idea is simple: for each candidate $w$ who won \emph{without gaining a quota}, at each step in which some other candidate $e$ is eliminated, we calculate how many votes would have to be moved from $w$ (or some other candidates with large tallies) to $e$ (and some other candidates with small tallies) to get $W$ eliminated instead.   Clearly this changes the outcome, though we don't immediately know how.
+
+This gives us an upper bound on the size of the manipulation necessary to change the result.  There may, of course, be smaller manipulations that are not discovered by this method.  
+
+When a solution is found, there may be many different ways to achieve it, corresponding to several different election outcomes.  
+
+There are two slightly different variants, each corresponding to different assumptions about the source of error.  In the first variant, we allow any sort of change to ballots.  In the second, we assume that first-preferences are recorded accurately (in the polling place, under scrutiny) and that the only successful manipulation is one that leaves the first preference tallies unchanged.  In both cases there are a number of different variants and details that matter.  Although the idea generalises to any form of STV, we have implemented it for two particularly interesting ones: the idealised version of STV we used in our computation of margins \cite{blom2015efficient}, and a precise implementation of the Australian Senate counting rules \verb|(https://github.com/SiliconEconometrics/PublicService)|.
+
+The Australian Senate rules have a number of complicating issues, including complex rules for multiple eliminations.  For this reason, we describe the idealised version of the algorithms first, then describe how we deal with some of the complexities of the Senate rules in a later section.
+
+\subsection{Theoretical/ideal Preliminaries}
+We have an announced set $W$ of winners.  $W = \{w_1, w_2, \ldots, w_s \}$ where $s$ is the number of seats.  There are two different ways of winning: $w$ may get a quota, or $w$ may be one of only $k$ candidates to remain uneliminated at the end, when there are only $k$ seats remaining to be allocated.  Sometimes these two conditions might be met simultaneously.  Let $L \subseteq W$ be the set of candidates who win by being left uneliminated at the end.  At each step, for each winner $w \in L$, we want to shift enough votes from $w$ to get $w$ eliminated at (or before) that point.  Then we want to rerun the election and see who wins instead.
+
+Two important things to check:
+\begin{itemize}
+	\item that the prior elimination rounds are not affected or, if they are, that $w$ gets eliminated, and
+	\item that if we shift votes that have been used to elect a candidate, the manipulation size is counted in terms of number of paper ballots, not the sum of the weights as a result of transfers.
+\end{itemize}
+
+Let $t_i(c)$ be the tally of candidate $c$ at round $i$.
+
+\subsubsection{Variant 1: when first preferences are allowed to change}
+We try to remove $m$ votes from $w$ and share that among the low-tally candidates until all other tallies are higher than $w$'s.
+
+For each round $i$, if candidate $e$ is eliminated at round $i$,
+
+For each $w \in W$, set 
+\begin{equation} m_i(w) = \min \{m :  \forall \text{continuing candidates }  c \neq w, 
+	t_i(w) - m < t_i(c) + \delta_c  \text{ where } \Sigma_c \delta_c = m   \}  
+\label{eqn:margin} \end{equation}
+
+
+\begin{lemma}
+If $w$ has $m_i(w)$ first-preference votes, then this will produce a valid solution.  
+\end{lemma}
+\begin{proof}
+If the shift gets $w$ eliminated before round $i$, then that's a valid solution.  
+
+So suppose that $w$ is still standing at round $i$.  Adding extra votes to other candidates can't have affected the elimination order before now, because it could only have increased the tallies of uneliminated candidates.  (Detail: we need to argue that we also haven't accidentally given someone a quota who wouldn't otherwise have had one.  This is true because $w$ must have less than a quota at $i$ (or it's not continuing), and the recipients have received only enough votes to bring them up to $t_i(w)$ at most.)
+
+Also note all the transfer values are 1, so the total number of ballots is equal to the total weight of the votes.
+\end{proof}
+
+If we allow non-first preferences to change too, we need to check that the manipulation doesn't affect the elimination order before $i$, or that if it does then $w$ gets eliminated anyway.  A very similar argument applies: simply take the preference that lists $w$ and substitute a preference for $c$ instead (removing any subsequent mention of $c$).  This will affect only tallies too high to have been eliminated by round $i$ and too small to have a quota.  However, we now need to be more careful about accounting for manipulations on ballots with a transfer value less than 1.  The minimum manipulation must be counted in terms of the number of ballots, not the total weight of them.  We explore this idea more precisely below.
+
+\subsubsection{Variant 2: when first preferences must stay constant}
+The next section assumes that there is some other, independent and fixed, list of first preferences, and that any manipulation must therefore leave them unchanged.  The idea is the same, but instead of removing (first) preferences from $w$, we remove (non-first) preferences for $w$ that are currently sitting on $w$'s pile.  These preferences are shifted across to (other) low-tally candidates, until enough have been shifted to get $w$ eliminated.  It's possible that a solution might exist in Variant~1, but none in Variant~2.
+
+We can also shift preferences that are for $w$ that have not yet got to $w$, onto any (low-tally) candidate.  This cannot  have any effect on elimination orders up to the current round.   \VTNote{Presumably we can shift any preferences for anyone that haven't yet been read.}
+
+Now because we're not dealing with first preferences, we need to be careful to account for whole ballot papers even when the transfer values are less than one.  We need to minimise the total number of ballots shifted, given the same restrictions on tallies expressed in Equation~\ref{eqn:margin}.
+
+
+\subsection{Practicalities and optimisations for the Senate}
+The above section gives simple computations for computing the bounds directly.  However, the true counting algorithm for the Australian Senate is complex and fiddly.  For example, these modifications may affect rounding and the rules for multiple eliminations in ways that are hard to test for.  Other senate practicalities:
+\begin{itemize}
+\item  ATL votes are harder to manipulate (before 2016, impossible. after 2016, tricky)
+\item  Need to use a different technique (stuff from other people) to get anything in 2013. Binary search is not used here.
+\item  Tie resolution is messy.  We solve this by just overcompensating a little, to make sure there are no ties.
+\item  Transfer values make which votes  to use messy (e.g a 0.4TV from $w$ vs a 1.0TV from some high scorer). We arbitrarily (and potentially inefficiently) assume that all votes from $w$ are used in preference to other people’s, when first-preference changes are allowed, but otherwise order by transfer value.    
+\item Rounding is very hard to account perfectly for, and may produce small errors.
+\end{itemize}
+
+We solve this problem by simply doing a binary search for $m$, rather than computing $m$ directly, and recomputing the election outcome on the modified data to check that it is correct. 
+
+\subsubsection{Further optimisations}
+\VTNote{Add Andrew's clever idea for binary-searching for smaller additions to the lower candidates.}
+
+\subsection{Some ideas for ballot-level comparison audits of the Senate outcome}
+\VTNote{Philip says probably leave this out, there being not a lot of point in an RLA if there's no lower bound on the margin and no genuine option of reverting to a full hand count.  Leaving it in for now in case the discussion of which errors to ignore turns out to be useful.}
+
+If we have two different hypotheses about the outcome, then we can see that some discrepancies couldn't affect them.  (We can't necessarily say whether a particular discrepancy might have caused the result to change in some other way.)  An outcome is defined by a set of winners, each tagged with the method by which they won (whether by getting a quota or by being uneliminated at the last round).
+
+Let $L_1$ and $L_2$ be the sets of candidates left uneliminated at the last rounds of hypotheses 1 and 2 resp.  If a discrepancy arises at a preference that is preceded by at least one candidate in $L_1$ and at least one candidate in $L_2$, then that discrepancy cannot affect the result.  (Note that the same doesn't apply to candidates who have won by getting a quota, because those votes are distributed.)
+
+So a suggestion for comparison audits of the Senate would look like this:
+\begin{enumerate}
+\item Run the winner-elimination heuristic above to find some near misses.  Each of these can translate into at least one alternative hypothesis $h$, which can be summarised as a set who win by getting a quota and a set $L_h$ who win by remaining uneliminated in the last round, together with an upper bound $M$ on the margin between $h$ and the apparent outcome.
+\item (Possibly: run a cut-down version of the techniques from \cite{blom2015efficient}, for as much of the tail of the computation as is feasible, to search for possibly improved upper bounds.  \VTNote{This comment could probably do with some expanding/explaining.  Seems worth doing, though it isn't clear exactly what it proves...  })
+\item Run a risk-limiting audit with those different hypotheses as different ``candidates'' and the margins as given.  See below. 
+\end{enumerate}
+
+\subsection{The RLA}
+\VTNote{Philip, I need a little help here.  Not sure exactly what is valid.  Clearly we only ever get assurances of the form, ``if this margin is indeed minimal then P.''  I need to understand valid propositions P.   What I don't fully understand is how different errors might need to be counted towards different hypotheses.  Is it as simple as treating each one as a different ``candidate'' in MICRO, or is that not quite right because of correlated errors?  But then MICRO can have correlated errors too, right?}
+
+\emph{Big Unproven Assumption: that these are all the possible true outcomes we have to worry about, and that in each case we've found the most efficient way of switching to that outcome.}  Note that it is easy to construct test cases in which this assumption is false.  However, it seems in practice likely enough to be true that it's worth working with, in parallel with other methods that don't make this assumption.
+
+\subsubsection{Idea 1: Similar to ``super-simple'' RLA's}
+Use the main ideas of \cite{stark2010super}, though we only have one race.  Whenever you see a discrepancy, count it as if it contributes to the minimum margin.
+
+This could possibly be made more efficient by ignoring some discrepancies, if we can be confident they don't make a difference.
+Let $H$ be the set of all identified alternative hypotheses, and let $a$ be the apparent outcome.  As above, let $L_h$ be the set of candidates that remain uneliminated at the end of the count.  The following discrepancies can be ignored:
+\begin{itemize}
+\item If for any hypothesis $h \in H \cup \{a \}$, there is at least one candidate in $L_h$ appearing on that ballot in an earlier position than the discrepancy.
+\item \VTNote{There must be others.  Unfortunately, it's not even clear that you can ignore discrepancies that seem to advantage someone who has already won, because they might mess up the elimination order and hence have bizarre unpredictable effects.  STV is not monotonic.}
+\end{itemize}
+
+
+
+\subsubsection{Idea 2: Use MICRO}
+The idea here \VTNote{ and I'm not sure whether it's valid} is to consider each alternative hypothesis as a ``candidate'' and its corresponding margin as the ``margin'' by which that ``candidate'' missed out.  Then use MICRO \cite{stark2008sharper}.  We might sometimes be able to ignore a certain discrepany when considering one alternative $h$, but not for all of them.  (For instance, if the discrepany appears after candidates in $L_h$ and $L_a$, but not necessarily after candidates in every other $L_{h'}$.)  
+
+Of course, we'd end up counting a very large number of discrepancies against every margin---I assume that in that case we just count them as if they contribute to the smallest.  This might not be much different from Idea~1. 
+
+\bibliographystyle{alpha}
+\bibliography{e-vote}
+
+\end{document}
