@@ -53,14 +53,14 @@ class Election:
         self.candidates = None               # list of candidates
         self.ballots = None                  # list of ballots
         self.ballot_weights = None           # dict mapping ballots to weights
-            """
-            ballot_weights is a python dict mapping ballots in self.ballots to weights that are >= 0.
-            These weights are *not* modified by the counting; they always
-             represent the number of times each preference list was input as a ballot.
-            These weights need *not* be integers.
-            """
+        """
+        ballot_weights is a python dict mapping ballots in self.ballots to weights that are >= 0.
+        These weights are *not* modified by the counting; they always
+        represent the number of times each preference list was input as a ballot.
+        These weights need *not* be integers.
+        """
 
-    def load_election(self, dirname):...
+    def load_election(self, dirname):
         """
         Load election data from files in the specified directory. Sets
             self.electionID
@@ -75,7 +75,7 @@ class Election:
 
         pass # TBD
     
-    def add_ballot(self, ballot, weight): ...
+    def add_ballot(self, ballot, weight):
         """ 
         Add BTL ballot with given weight to the election.
         If ballot with same preferences already exists, then
