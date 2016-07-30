@@ -47,12 +47,13 @@ class Election:
     """
 
     def __init__(self):
-        self.electionID = None               # string
-        self.seats = None                    # integer
-        self.candidate_ids = None            # list of candidate_ids
-        self.candidates = None               # list of candidates
-        self.ballots = None                  # list of ballots
-        self.ballot_weights = None           # dict mapping ballots to weights
+        self.electionID = "NoElection"       # string
+        self.seats = 0                       # integer
+        self.candidate_ids = []              # list of candidate_ids
+        self.candidates = []                 # list of candidates
+        self.ballots = []                    # list of ballots
+        self.ballot_weights = {}             # dict mapping ballots to weights
+        self.total_ballot_weight = 0.0       # sum of all ballot weights
         """
         ballot_weights is a python dict mapping ballots in self.ballots to weights that are >= 0.
         These weights are *not* modified by the counting; they always
@@ -83,11 +84,12 @@ class Election:
         No formality checks are made.
         """
 
-        if self.ballot_weights.has_key(ballot):
+        if ballot in self.ballot_weights:
             self.ballot_weights[ballot] += weight
         else:
             self.ballots.append(ballot)
             self.ballot_weights[ballot] = weight
+        self.total_ballot_weight += weight
 
     def load_more_ballots(self, filename):
         """ 

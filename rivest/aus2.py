@@ -1,10 +1,12 @@
 # aus2.py
-# July 27, 2016
+# July 30, 2016
 # python3
 # code sketches for AUS senate audit by Bayesian audit method
 # This codes derives from aus.py, but modified to utilize api.py
 # for interfacing with dividebatur code.
-# It also is being modified to use gamma-variate optimization.
+# It has also been modified to use gamma-variates to draw from
+# Dirichlet posterior probability distribution, rather than using
+# Polya's urn
 
 import collections
 import copy
@@ -17,11 +19,6 @@ class RealElection(api.Election):
 
     def __init__(self):
         super(RealElection, self).__init__()
-        self.candidates = []
-        self.prior_ballots = [ (c,) for c in self.candidates ]
-
-    def get_candidates(self):
-        return []
 
     def draw_ballots(self, k):
         """ 
@@ -43,6 +40,7 @@ class SimulatedElection(api.Election):
         self.candidate_ids = list(range(1,self.m+1))  # {1, 2, ..., m}
         self.n = n                                 # number of cast ballots
         self.ballots_drawn = 0                     # cumulative
+        self.seats = int(m/2)                      # seat best 1/2 of candidates
 
     def draw_ballots(self, k):
         """ 
@@ -53,8 +51,9 @@ class SimulatedElection(api.Election):
         where U = uniform(0,1).  Then candidates are sorted into increasing
         order of these values.
         """
-        v = 5.0   # noise level
-        k = min(k, self.n-self.ballots_drawn)
+        m = self.m                                 # number of candidates
+        v = m/2.0                                  # noise level
+        k = min(100, self.n-self.ballots_drawn)    # sample increment size
         for _ in range(k):
             L = [ (idx + v*random.random(), c)
                   for idx, c in enumerate(self.candidates) ]
@@ -66,8 +65,8 @@ class SimulatedElection(api.Election):
         """ 
         Return result of scf (social choice function) on this sample. 
 
-        Here we use Borda count as a scf.
-        Returns tuple in decreasing order of candidate popularity.
+        Here we use Borda count as a test scf.
+        Returns tuple listing candidate_ids winner in canonical (sorted) order.
         """
         counter = collections.Counter()
         for ballot in self.ballots:
@@ -76,27 +75,18 @@ class SimulatedElection(api.Election):
                 counter[candidate_id] += w*idx
         L = counter.most_common()
         L.reverse()
-        return tuple(c for (c, count) in L)
+        L = [candidate_id for (candidate_id, count) in L]
+        outcome = tuple(sorted(L[:self.seats]))
+        return outcome
 
 
 ##############################################################################
-# A ballot is an abstract blob.
-# Here implemented as a tuple.
-# The only operations we need on ballots are:
-#    -- obtaining them from election data
-#    -- putting them into a list
-#    -- copying one of them
-#    -- making up a list of "prior ballots" expressing
-#       our Bayesian prior
-#    -- (possibly re-weighting ballots?)
-
-##############################################################################
-# Implementation of polya's urn or equivalent
+# Drawing from Bayesian posterior (aka reweighting or fuzzing)
 
 def get_new_ballot_weights(election, r):
     """ 
     Return dict new_ballot_weights for this election, based
-    on using gamma variates to give us Dirichlet distribution over
+    on using gamma variates to draw from Dirichlet distribution over
     existing ballots, based on existing ballot weights.
     Sum of new ballot weights should be r (approximately).
     New weights are rounded down.
@@ -129,25 +119,24 @@ def audit(election, alpha=0.05, k=4, trials=100):
     print("Candidates are:", election.candidates)
     print("Number of ballots cast:", election.n)
     print("Number of trials per sample:", trials)
+    print("Number of seats contested for:",election.seats)
+
+    # cast one "prior ballots" ballot for each candidate, to
+    # establish Bayesian prior.  The prior ballot is a length-one
+    # partial ballot with just a vote for that candidate.
+    for c in election.candidate_ids:
+        election.add_ballot((c,),1.0)
 
     # overall audit loop
-    sample = []
     while True:
-
-        # cast one "prior ballots" ballot for each candidate, to
-        # establish Bayesian prior.  The prior ballot is a length-one
-        # partial ballot with just a vote for that candidate.
-        for c in election.candidate_ids:
-            election.add_ballot((c,),1.0)
 
         # draw additional ballots and add them to election.ballots
         election.draw_ballots(k)   
 
-        print("sample size is now", len(election.ballots),"(including prior ballots):")
+        print("sample size is now", election.total_ballot_weight,"(including prior ballots):")
 
         # run trials in Bayesian manner
-        # we assume that each outcome is 
-        # a list or tuple of candidates who have been elected, 
+        # Each outcome is a tuple of candidates who have been elected, 
         # in some sort of canonical or sorted order.
         # We can thus test for equality of outcomes.
         outcomes = []
@@ -164,11 +153,11 @@ def audit(election, alpha=0.05, k=4, trials=100):
             print("Stopping: audit confirms outcome:", best)
             break
 
-        if len(election.ballots) == election.n:
+        if election.total_ballot_weight >= election.n:
             print("Audit has looked at all ballots. Done.")
             break
 
-audit(SimulatedElection(4,10000))
+audit(SimulatedElection(100,1000000))
 
           
         
