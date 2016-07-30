@@ -12,4 +12,7 @@ Current contents:
 
 ``xz-notes.org``        Notes on using compression scheme ``xz``
 
+``api.py``              Draft of possible API interfacting dividebatur with aus.py
+
+
 
