@@ -110,7 +110,10 @@ def get_new_ballot_weights(election, r):
     new_ballot_weights = {}
     for ballot in election.ballots:
         old_weight = election.ballot_weights[ballot]
-        new_ballot_weights[ballot] = random.gammavariate(old_weight,1.0)
+        if old_weight > 0:
+            new_ballot_weights[ballot] = random.gammavariate(old_weight,1.0)
+        else:
+            new_ballot_weights[ballot] = 0.0
     total_weight = sum([new_ballot_weights[ballot]
                         for ballot in election.ballots])
     for ballot in election.ballots:
@@ -145,8 +148,8 @@ def audit(election, alpha=0.05, k=4, trials=100):
     # cast one "prior" ballot for each candidate, to
     # establish Bayesian prior.  The prior ballot is a length-one
     # partial ballot with just a first-choice vote for that candidate.
-    for c in election.candidate_ids:
-        election.add_ballot((c,),1.0)
+    for candidate_id in election.candidate_ids:
+        election.add_ballot((candidate_id,),1.0)
 
     start_time = time.time()
 
