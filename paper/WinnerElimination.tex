@@ -30,16 +30,16 @@ Although the Senate digitisation and counting process has been partially automat
 
 This paper describes two main suggested approaches to auditing the paper evidence of Australian Senate votes.  
 \begin{itemize}
-	\item Bayesian audits (cite Rivest \& Shen)
+	\item Bayesian audits~\cite{rivest2012bayesian} 
 	\item Heuristic search for small margins, followed by traditional audit.
 \end{itemize}
 
-Both amount to looking for small, unnoticed ways to change the election outcome, and trying to detect whether there were enough errors in the digitizing step to have shifted the apparent outcome away from that (other, correct) one.
+Both amount to looking for small, unnoticed ways to change the election outcome, and trying to detect whether there were enough errors in the digitizing step to have shifted the apparent outcome away from that (other, correct) one. We also describe a simple capped scheme---its main advantage is that it would bound in advance the total amount of auditing to be done, though its results could be inconclusive. 
+
 This would be the first time these sort of auditing steps are
 being applied, and so this year's efforts would be much more
-``exploratory'' in character than ``authoritative''.  We hope to be able to perform two or more kinds of audits on the same samples.  However, we do not even know, at the time of writing, whether any audit will be permitted at all.  We also describe a simple capped scheme.
-
-\subsection{Bayesian Audits} The Bayesian audit (cite Rivest \& Shen) should give some evidence that small changes to the realization of the ballots could alter the results. 
+``exploratory'' in character than ``authoritative''.  We hope to be able to perform two or more kinds of audits on the same samples.  However, we do not even know, at the time of writing, whether any audit will be permitted at all.  
+\subsection{Bayesian Audits} Rivest and Shen's Bayesian audit~\cite{rivest2012bayesian} should give some evidence that small changes to the realization of the ballots could alter the results. 
 
 The simple version amounts to a bootstrap, treating the population of reported ballots as
 if it is the (prior) probability distribution of ballots, and then seeing how often one gets the same result for samples drawn from that prior. 
@@ -61,7 +61,7 @@ Suppose there are N ballots in all.
 
 Suppose we know that the outcome could be altered by altering no more than X ballots in all, provided those ballots were suitably chosen. That is, we think we have an upper bound on the margin, rather than a lower bound. Suppose
 we think the true ballot error rate p (ballots with errors divided by total ballots, no matter how many errors each ballot has) is $q$, with $qN \gg X$; that is, we think the error rate is large enough that the outcome could easily be wrong.  Then a modest sample
-of size n should let us show infer with high confidence that pN > X. The sample size I have in mind is on the order of n=500 or n=1000. A lower 99\% confidence bound for p if we find 3 ballots with errors in a sample of size 500 is about 0.0009, more than double
+of size n should let us show infer with high confidence that $pN > X$. The sample size I have in mind is on the order of $n=500$ or $n=1000$. A lower 99\% confidence bound for p if we find 3 ballots with errors in a sample of size 500 is about 0.0009, more than double
 what's needed to account for the "margin" of 141 votes. 3 errors in a sample size of 1000 would give a lower bound of 0.00044, which is still higher than
 141/339,159, which is 0.00042.  If we did find errors at about that rate, it would be strong evidence that a full hand count is warranted.
 
@@ -171,7 +171,7 @@ If we allow non-first preferences to change too, we need to check that the manip
 \subsubsection{Variant 2: when first preferences must stay constant}
 The next section assumes that there is some other, independent and fixed, list of first preferences, and that any manipulation must therefore leave them unchanged.  The idea is the same, but instead of removing (first) preferences from $w$, we remove (non-first) preferences for $w$ that are currently sitting on $w$'s pile.  These preferences are shifted across to (other) low-tally candidates, until enough have been shifted to get $w$ eliminated.  It's possible that a solution might exist in Variant~1, but none in Variant~2.
 
-We can also shift preferences that are for $w$ that have not yet got to $w$, onto any (low-tally) candidate.  This cannot  have any effect on elimination orders up to the current round.   \VTNote{Presumably we can shift any preferences for anyone that haven't yet been read.}
+If there aren't enough available preferences on $w$'s pile, we can take some preferences from candidate higher than $w$.  This could sometimes affect the earlier elimination order, so the resulting solution must be re-run through the count to check that it is valid.
 
 Now because we're not dealing with first preferences, we need to be careful to account for whole ballot papers even when the transfer values are less than one.  We need to minimise the total number of ballots shifted, given the same restrictions on tallies expressed in Equation~\ref{eqn:margin}.
 
@@ -189,7 +189,12 @@ The above section gives simple computations for computing the bounds directly.  
 We solve this problem by simply doing a binary search for $m$, rather than computing $m$ directly, and recomputing the election outcome on the modified data to check that it is correct. 
 
 \subsubsection{Further optimisations}
-\VTNote{Add Andrew's clever idea for binary-searching for smaller additions to the lower candidates.}
+In order to eliminate $w$, it might not be necessary to eliminate them at the round where they are numerically closest to elimination.  In other words, the description above might be correct, but we might be able to achieve the same effect with fewer manipulations, if we let some of the low-tally candidates get eliminated before $w$.  This suggests the following expanded search:
+
+Once finding the best solution using the techniques described above, take each low-tally candidate $l$ and let $r(l)$ be the votes that $l$ has received.  Do a binary search adding between 0 and $r(l)$ votes to $l$, to see whether $w$ does indeed get eliminated (in a later round ) when $l$ receives less than $r(l)$ votes.  Reset $l$'s extra votes to the minimum, $r'(l)$ for which $w$ still gets eliminated.  Iterate through all low-tally candidates, twice.  In practice we find this significantly reduces some of the margins we found.
+
+
+\VTNote{I reckon we need a table like Michelle's table, listing apparent (last round) margin, margin by changing first pref's, margin without changing first pref's, and optimized margin, for a few key races from 2013 and 2016.}<++>
 
 \subsection{Some ideas for ballot-level comparison audits of the Senate outcome}
 \VTNote{Philip says probably leave this out, there being not a lot of point in an RLA if there's no lower bound on the margin and no genuine option of reverting to a full hand count.  Leaving it in for now in case the discussion of which errors to ignore turns out to be useful.}
