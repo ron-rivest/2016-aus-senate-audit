@@ -14,6 +14,8 @@ Current contents:
 
 ``api.py``              Draft of possible API interfacting dividebatur with aus.py
 
+``api_dividebatur.py``  Implements an API based on ``api.py`` for interfacing with dividebatur.
+
 ``aus.py``              Initial draft of Bayesian audit framework.
 
 ``aus2.py``             Revision of aus.py to use ``api.py``; also much more efficient since it uses ballot weights and gamma variates.

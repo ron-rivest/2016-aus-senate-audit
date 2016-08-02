@@ -1,5 +1,5 @@
 # aus2.py
-# July 30, 2016
+# July 31, 2016
 # python3
 # part of https://github.com/ron-rivest/2016-aus-senate-audit
 
@@ -15,27 +15,29 @@ import random
 # random.seed(1)    # make deterministic
 import time
 
-import api
+import api_dividebatur as api
 
 class RealElection(api.Election):
 
-    def __init__(self):
+    def __init__(self, contest_name):
+        """
+        `contest_name` is the contest to load (e.g. 'TAS' or 'NT').
+        """
         super(RealElection, self).__init__()
-        api.load_election(self, "dirname-TBD")
+        self.load_election(contest_name)
 
     def draw_ballots(self, batch_size=100):
         """ 
         add interpretation of random sample of real ballots
         to election data structure
         """
-        api.load_more_ballots(self, "filename-TBD")
+        self.load_more_ballots(batch_size)
 
-    def get_outcome(self, new_ballot_weights):
+    def scf(self, new_ballot_weights):
         """ 
         Return result of scf (social choice function) on this election. 
         """
-        ### call Bowland's code here
-        pass
+        return self.get_outcome(new_ballot_weights)
 
 class SimulatedElection(api.Election):
 
@@ -73,7 +75,7 @@ class SimulatedElection(api.Election):
             self.add_ballot(ballot, 1.0)
         self.ballots_drawn += batch_size
     
-    def get_outcome(self, new_ballot_weights):
+    def scf(self, new_ballot_weights):
         """ 
         Return result of scf (social choice function) on this sample. 
 
@@ -175,7 +177,7 @@ def audit(election, alpha=0.05, k=4, trials=100):
         outcomes = []
         for _ in range(trials):
             new_ballot_weights = get_new_ballot_weights(election, election.n)
-            outcomes.append(election.get_outcome(new_ballot_weights))
+            outcomes.append(election.scf(new_ballot_weights))
 
         # find most common outcome and its number of occurrences
         best, freq = collections.Counter(outcomes).most_common(1)[0]
@@ -199,8 +201,8 @@ def audit(election, alpha=0.05, k=4, trials=100):
 
     print("Elapsed time:",time.time()-start_time,"seconds.")
 
-audit(SimulatedElection(100,1000000))
-
+#audit(SimulatedElection(100,1000000))
+audit(RealElection('TAS'))
           
         
     
