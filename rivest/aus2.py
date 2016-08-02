@@ -16,6 +16,7 @@ import random
 import time
 
 import api_dividebatur as api
+from itertools import chain, groupby
 
 class RealElection(api.Election):
 
@@ -179,6 +180,10 @@ def audit(election, alpha=0.05, k=4, trials=100):
             new_ballot_weights = get_new_ballot_weights(election, election.n)
             outcomes.append(election.scf(new_ballot_weights))
 
+        candidate_outcomes = collections.Counter(chain(*outcomes))
+        print("    " + "Fraction present in outcome by candidate: ")
+        print("    " + ', '.join([str(candidate) + ": " + str(c_freq/trials) for candidate,c_freq in candidate_outcomes.items()]))
+        
         # find most common outcome and its number of occurrences
         best, freq = collections.Counter(outcomes).most_common(1)[0]
         print("    most common outcome (",election.seats,"seats ):")
