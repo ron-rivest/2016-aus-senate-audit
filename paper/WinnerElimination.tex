@@ -14,6 +14,8 @@
 \title{Auditing Australian Senate Ballots}
 \maketitle
 
+\tableofcontents
+
 \section{Introduction}
 Election auditing is well understood for plurality elections but difficult for complex voting schemes.  The Australian Senate uses the Single Transferable Vote (STV).  The data digitization is partially automated (which is a good thing), and the count itself is entirely automated.  There are many characteristics that make auditing challenging:
 
@@ -32,7 +34,7 @@ Although the Senate digitisation and counting process has been partially automat
 This paper describes two main suggested approaches to auditing the paper evidence of Australian Senate votes.  
 \begin{itemize}
 	\item Bayesian audits~\cite{rivest2012bayesian} 
-	\item Heuristic search for small margins, followed by traditional audit.
+	\item Heuristic search for small margins, followed by a ``negative'' audit.
 \end{itemize}
 
 Both amount to looking for small, unnoticed ways to change the election outcome, and trying to detect whether there were enough errors in the digitizing step to have shifted the apparent outcome away from that (other, correct) one. We also describe a simple capped scheme---its main advantage is that it would bound in advance the total amount of auditing to be done, though its results could be inconclusive. 
@@ -40,33 +42,39 @@ Both amount to looking for small, unnoticed ways to change the election outcome,
 This would be the first time these sort of auditing steps are
 being applied, and so this year's efforts would be much more
 ``exploratory'' in character than ``authoritative''.  We hope to be able to perform two or more kinds of audits on the same samples.  However, we do not even know, at the time of writing, whether any audit will be permitted at all.  
+
+\subsection{Background on audits}
+An election audit is an attempt to test the hypothesis ``That the reported election outcome is incorrect.''  This hypothesis is tested by randomly sampling the paper ballots and recording either what election outcome the sample produces (a ballot-polling audit) or how many discrepancies there are between the official data file and the paper evidence (a ballot-comparison audit). There are two kinds of wrong answer: an audit may declare that the official election outcome is correct when in fact it is false, or it may declare that the official outcome is wrong when in fact it is correct.  The latter problem is easily solved in simpler contexts by never declaring an election outcome wrong, but instead declaring that a full manual recount is required.  
+
+An audit is \emph{Risk-limiting} if it guarantees an upper bound on the probability of wrongly declaring a wrong outcome correct. (**Cite Philip RLAs).  A full manual recount is risk-limiting, but prohibitively expensive in our setting.  None of the audits suggested in this paper are risk limiting, however all of them provide some way of estimating the rate of errors and hence the likelihood that the announced outcome is wrong.  In some cases, the audit may not say conclusively whether the error rate is large enough to call the election result into question.  In others, we can derive some confidence either that the announced outcome is correct or that a manual inspection of all ballots is warranted.
+
 \subsection{Bayesian Audits} Rivest and Shen's Bayesian audit~\cite{rivest2012bayesian} should give some evidence that small changes to the realization of the ballots could alter the results. 
 
 The simple version amounts to a bootstrap, treating the population of reported ballots as
 if it is the (prior) probability distribution of ballots, and then seeing how often one gets the same result for samples drawn from that prior. 
 
-A more complex version makes small sample of the paper ballot data, then uses this to generate more ballots at random.  We then consider how many of the resulting datasets get an outcome different from the announced one.  \VTNote{Need to add more detail and a clearer expl.}
+A more complex version makes small sample of the paper ballot data, then uses this to generate more ballots at random.  We then consider how many of the resulting datasets get an outcome different from the announced one.  
 
-\subsection{Upper bounds on the margin plus traditional audits}
-We have developed some powerful heuristics for searching for upper bounds on the manipulation.  One technique is an extension of Carey's winner elimination upper bound (cite Carey EVT '11).  The other consists of extending techniques for computing the IRV margin of victory to the last rounds of an STV count.  In either case, we can guarantee that the solution we find is genuine, {\it i.e.} a true way to change the outcome with that number of ballots, but we can't guarantee that it is minimal.
+Although these audits were designed for complex elections, there are significant challenges to adapting them to the Australian Senate.  For example, the sheer number of possible ballot types makes it challenging to generate ``random'' ones efficiently.  Running the simulations efficiently is challenging when the count itself takes some time to run.  Answers to these challenges are described in Section~\ref{sec:bayes}
 
+\subsection{Upper bounds on the margin plus ``negative'' audits}
+We have developed some heuristics for searching for upper bounds on the manipulation, described in Section~\ref{sec:winnerElimination}.  One technique is an extension of Carey's winner elimination upper bound (cite Carey EVT '11).  The other consists of extending techniques for computing the IRV margin of victory to the last rounds of an STV count.  In either case, we can guarantee that the solution we find is genuine, {\it i.e.} a true way to change the outcome with that number of ballots, but we can't guarantee that it is minimal.  Either way, we get a list of alternative outcomes together with an upper bound on the number of votes that need to change to produce them.
 
-We can approach this from either direction. 
+%We can approach this from either direction. 
 %Given the high error rate we expect, compared to the number of %errors required to change the outcome, 
-We could conduct a "negative audit" of the following kind.  
+We could conduct a "negative audit" in the following way.  
 This produces either evidence that the error rate is too small to matter or evidence that it is large enough that it could matter.
 
-Given some upper bounds, on technique for auditing is:
+Suppose there are $N$ ballots in all.
+Suppose we know that the outcome could be altered by altering no more than $X$ ballots in all, provided those ballots were suitably chosen.  Suppose
+we think the true ballot error rate $p$ (ballots with errors divided by total ballots, no matter how many errors each ballot has) is $q$, with $qN \gg X$; that is, we think the error rate is large enough that the outcome could easily be wrong.  Then a modest sample
+of size $n$ should let us infer with high confidence that $pN > X$. 
 
-Suppose there are N ballots in all.
-
-Suppose we know that the outcome could be altered by altering no more than X ballots in all, provided those ballots were suitably chosen. That is, we think we have an upper bound on the margin, rather than a lower bound. Suppose
-we think the true ballot error rate p (ballots with errors divided by total ballots, no matter how many errors each ballot has) is $q$, with $qN \gg X$; that is, we think the error rate is large enough that the outcome could easily be wrong.  Then a modest sample
-of size n should let us show infer with high confidence that $pN > X$. The sample size I have in mind is on the order of $n=500$ or $n=1000$. A lower 99\% confidence bound for p if we find 3 ballots with errors in a sample of size 500 is about 0.0009, more than double
+For example, a lower 99\% confidence bound for $p$ if we find 3 ballots with errors in a sample of size 500 is about 0.0009, more than double
 what's needed to account for the "margin" of 141 votes. 3 errors in a sample size of 1000 would give a lower bound of 0.00044, which is still higher than
-141/339,159, which is 0.00042.  If we did find errors at about that rate, it would be strong evidence that a full hand count is warranted.
+141/339,159, which is 0.00042.  If we did find errors at about that rate, it would be strong evidence that a full re-examination of all the paper ballots is warranted.
 
-\VTNote{Detail: what about errors that really don't matter?  Not sure how we identify them, but any omissions would help.}
+Section~\ref{sec:comparisonAudits} details the statistical analysis and some sharper ways of distinguishing errors that are likely to make a difference to the result.
 
 \subsection{A simple capped scheme}
 We may end up doing something much simpler this time: we
@@ -83,9 +91,10 @@ many ballots at random and examine them all.
 This gives a way to estimate the error rate, which, if it is large, would give a strong argument for larger audits in the
 future.
 
-You can also derive some partial confidence measures from the
+\subsubsection{Combining with Bayesian Auditing}
+We can also derive some partial confidence measures from the
 given sample.  For example, you could list, for each candidate,
-the \% of the time that candidate was elected across the Bayesian
+the precentage of the time that candidate was elected across the Bayesian
 experiments.  (Each experiment starts with a small urn filled with
 the 14000 ballots, plus perhaps some prior ballots, and expands
 it out to a full-sized profile of 14M ballots with a polya's urn
@@ -111,14 +120,49 @@ the assurance you have obtained for that level of effort.
 
 Since time is very short, and the uncertainty of more rigorous audit methods is a major drawback, this alternative might be the best for this year.
 
-\section{A description of the Senate screen-based verification process and an explanation of why its integrity guarantees are not sufficient}
-\VTNote{Might ask Chris Culnane to write this.  Though really, ``it's not software independent,'' about sums it up.  Is this necessary/useful for a tech report?  Certainly seems to need to be communicated somehow, since they apparently think that sprinkling digital signatures everywhere will solve the problem.}
+\subsection{Summary}
+These three different survey methods could each be conducted on the same dataset.  We would generate the sample by choosing random elements of the official preference data file, then fetching the corresponding ballot.  The Bayesian Audit and the simple capped scheme would then simply treat the paper ballots as the random sample.  The upper-bounds based scheme would consider the errors relative to what had been reported.
 
-\section{Bayesian Audits and how to use them in the Australian Senate}
+\section{A description of the Senate screen-based verification process and an explanation of why its integrity guarantees are not sufficient}
+\VTNote{From Chris Culnane.  I've left this in for now so that the other authors can read it, but probably we just want to summarize the main points.}
+
+Details of the new senate counting system are fairly scarce. What information is provided raises further questions. However, we can tell that it is not software independent, and that there is little to no end-to-end auditing – relying instead on the integrity of the software. 
+
+The audit steps that are included seem to exist to comply with the legislation, as opposed to guarantee an accurate result.  \VTNote{I think this is a really important point, though one that needs to be expanded upon in order not to sound snarky.  To put it the right way round, the legislation hasn't been adequately amended to consider how to guarantee integrity of automated scanning and counting.  So the AEC has had to implement a bunch of rules that don't really make sense any more, and they've lost sight of the more important criterion of providing evidence of an accurate election result.  In short, this is an argument for amending the legislation to require just the kind of audits we're now trying to do.}
+
+The information for this brief analysis has been garnered from the following reports:
+\begin{itemize}
+\item {\tt	http://www.aec.gov.au/elections/candidates/files/counting/css-faqs.pdf}
+\item {\tt	http://www.aec.gov.au/elections/candidates/files/counting/css-technical-aspects.pdf}
+\item {\tt	http://www.aec.gov.au/elections/candidates/files/counting/senate-count-process-diagram.pdf}
+\end{itemize}
+
+The objective of the system is, in principle, extremely simple: capture the vote preferences from the ballot papers, and then publish \& tally them. Whilst internal audit steps are useful, an overarching audit of input to output would offer the strongest assurance, however, this does not take place. There are a number of points in the system where reconciliation is not clear, the work flow for the scanning is sufficiently complicated to provide potential avenues for mistakes and malicious behaviour. A lack of transparency in the overall approach results in an inability to determine if the potential weak points are sufficiently covered by scrutineering and reconciliation. 
+
+\subsection{Scanning and Counting Work Flow}
+The work flow has a number of troubling aspects:
+\begin{itemize}
+\item Why are ballots that are scanned as unmarked, and having come from an informal batch, excluded from further scrutiny? This seems to predispose informal ballots to rejection without further scrutiny.
+\item The flows are not 100\% accurate – in what scenario would a ballot paper, with matching scanning and data entry, end up in AEC adjudication? 
+\item Why do all flows lead to the Senate Counting System – is the senate counting system being fed informal votes, which it must then remove? If so, why are there no scrutineering steps detailed inside the AEC counting phase? Surely the informal votes are removed prior to being sent to the counting software?
+\item The cryptographic signature of the metadata seems to be generated as the last step prior to transmission to the AEC. As such, it is not a guarantee that the data has not changed since scanning, it only shows it has not changed during transmission or receipt. For example, after the data is classified as formal no further scrutiny is performed. As such, the integrity of the entire count is based on the trust of that central database, and every piece of software running on that server, to not alter a vote marked as formal. If an alteration did occur it would be undetectable. 
+\end{itemize}
+
+\subsection{Transmission to AEC}
+\begin{itemize}
+\item Why use SFTP instead of SCP? SFTP provides an interactive session, which dependent on server settings, would allow moving, deleting, renaming of files. If all that is taking place is uploading, SCP would seem like a better choice, since it only allows file copying. There are also no details about how data received via SFTP is transferred into the Segregated Secure Network, what’s more, why is the cryptographic signature not checked prior to the data being submitted into the secure network – surely it should be checked on receipt and prior to processing on the segregated network. The EasyCount server also appears to be able to log to the System log, despite being on a segregated network?
+\end{itemize}
+
+\subsection{Comparing cryptographic signature}
+Since the details of the signature scheme are not provided, or what PKI is deployed, it is difficult to assess the security of this step. Are signature files checked against a restricted list of public key certificates? Do signatures just need to have been signed by a valid key in a wider PKI? What checking is performed on the validity of incoming data, beyond the signature?
+
+
+
+\section{Bayesian Audits and how to use them in the Australian Senate}  \label{sec:bayes}
 \VTNote{TODO.  Write more here!  Much interesting stuff done.  Looking forward to hearing what happens on the Tasmanian data!}
 
 
-\section{Heuristics for upper bounds on STV margins}
+\section{Heuristics for upper bounds on STV margins}  \label{sec:winnerElimination}
 % We can use text from the RealSTVMargins paper 
 \VTNote{Add a discussion on Michelle's method for finding upper bounds by looking only at the last few (20 or so) rounds.}
 
@@ -197,6 +241,11 @@ Once finding the best solution using the techniques described above, take each l
 
 \VTNote{I reckon we need a table like Michelle's table, listing apparent (last round) margin, margin by changing first pref's, margin without changing first pref's, and optimized margin, for a few key races from 2013 and 2016.}<++>
 
+
+
+\section{Ballot-level comparison audits: statistics and counting details} \label{sec:comparisonAudits}
+\VTNote{Add email trail with Ron et al re 3 - 8 split.}
+
 \subsection{Some ideas for ballot-level comparison audits of the Senate outcome}
 \VTNote{Philip says probably leave this out, there being not a lot of point in an RLA if there's no lower bound on the margin and no genuine option of reverting to a full hand count.  Leaving it in for now in case the discussion of which errors to ignore turns out to be useful.}
 
@@ -211,7 +260,6 @@ So a suggestion for comparison audits of the Senate would look like this:
 \item Run a risk-limiting audit with those different hypotheses as different ``candidates'' and the margins as given.  See below. 
 \end{enumerate}
 
-\subsection{The RLA}
 \VTNote{Philip, I need a little help here.  Not sure exactly what is valid.  Clearly we only ever get assurances of the form, ``if this margin is indeed minimal then P.''  I need to understand valid propositions P.   What I don't fully understand is how different errors might need to be counted towards different hypotheses.  Is it as simple as treating each one as a different ``candidate'' in MICRO, or is that not quite right because of correlated errors?  But then MICRO can have correlated errors too, right?}
 
 \emph{Big Unproven Assumption: that these are all the possible true outcomes we have to worry about, and that in each case we've found the most efficient way of switching to that outcome.}  Note that it is easy to construct test cases in which this assumption is false.  However, it seems in practice likely enough to be true that it's worth working with, in parallel with other methods that don't make this assumption.
