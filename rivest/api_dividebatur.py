@@ -10,6 +10,7 @@ of the STV social choice function by Grahame Bowland.
 """
 
 import copy
+import hashlib
 import os
 import random
 
@@ -223,6 +224,22 @@ class Election:
 
         params may also control output (e.g. logging output).
         """
+        def tie_break_by_sha256_sort(items):
+            """
+            `tie_break_by_sha256_sort` takes a list of items. It then converts every item in the
+            list to a string and concatenates that string with the tie break string. This concatenation
+            is then unicode encoded and the SHA-256 is taken. These hashes are then converted to HEX and
+            sorted lexicographically. Finally, the original index of the first item in this sorted list
+            of hashes is returned as the index of the item to chose for breaking the given tie. Here the
+            original index refers to the item's position in the input `items`.
+            """
+            TIE_BREAK_STRING = 'TIE_BREAK_STRING'
+
+            def get_sha256_hash_of_item(item):
+                return hashlib.sha256((str(item) + TIE_BREAK_STRING).encode('utf-8')).hexdigest()
+
+            indices = sorted(range(len(items)), key=lambda i : get_sha256_hash_of_item(items[i]))
+            return indices[0]
 
         ballot_weights = new_ballot_weights or self.ballot_weights
 
@@ -234,5 +251,5 @@ class Election:
             ticket = Ticket(preferences)
             self.data.tickets_for_count.add_ticket(ticket, weight)
 
-        _, outcome = sc.get_outcome(self.contest_config, self.data, self.data_dir, self.out_dir)
+        _, outcome = sc.get_outcome(self.contest_config, self.data, self.data_dir, self.out_dir, automation_fn=tie_break_by_sha256_sort)
         return tuple(sorted(electee[Election.ID] for electee in outcome[Election.ELECTED]))
