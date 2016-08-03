@@ -13,6 +13,10 @@ import copy
 import os
 import random
 
+# Add parent directory to path so that we can find the dividebatur module.
+parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.sys.path.insert(0, parentdir)
+
 import dividebatur.dividebatur.senatecount as sc
 from  dividebatur.dividebatur.counter import Ticket
 
@@ -117,9 +121,9 @@ class Election:
         """
 
         # Sets configuration file and out directory to default values if not set by caller.
-        config_file = config_file or './dividebatur/aec_data/fed2016/aec_fed2016.json'
+        config_file = config_file or '../dividebatur/aec_data/fed2016/aec_fed2016.json'
         self.data_dir = os.path.dirname(os.path.abspath(config_file))
-        self.out_dir = out_dir or './dividebatur/angular/data/'
+        self.out_dir = out_dir or '../dividebatur/angular/data/'
 
         # Read the configuration file for the election data.
         election_config = sc.read_config(config_file)
