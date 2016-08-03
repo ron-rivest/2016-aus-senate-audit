@@ -34,11 +34,11 @@ class RealElection(api.Election):
         """
         self.load_more_ballots(batch_size)
 
-    def scf(self, new_ballot_weights):
+    def scf(self, new_ballot_weights, nonce=None):
         """ 
         Return result of scf (social choice function) on this election. 
         """
-        return self.get_outcome(new_ballot_weights)
+        return self.get_outcome(new_ballot_weights, nonce=nonce)
 
 class SimulatedElection(api.Election):
 
@@ -76,7 +76,7 @@ class SimulatedElection(api.Election):
             self.add_ballot(ballot, 1.0)
         self.ballots_drawn += batch_size
     
-    def scf(self, new_ballot_weights):
+    def scf(self, new_ballot_weights, nonce=None):
         """ 
         Return result of scf (social choice function) on this sample. 
 
@@ -160,6 +160,7 @@ def audit(election, alpha=0.05, k=4, trials=100):
     stage_counter = 0
     while True:
         stage_counter += 1
+        nonce = random.getrandbits(128)
         print("Audit stage number:", stage_counter)
 
         # draw additional ballots and add them to election.ballots
@@ -178,7 +179,7 @@ def audit(election, alpha=0.05, k=4, trials=100):
         outcomes = []
         for _ in range(trials):
             new_ballot_weights = get_new_ballot_weights(election, election.n)
-            outcomes.append(election.scf(new_ballot_weights))
+            outcomes.append(election.scf(new_ballot_weights, nonce=nonce))
 
         candidate_outcomes = collections.Counter(chain(*outcomes))
         print("    " + "Fraction present in outcome by candidate: ")
