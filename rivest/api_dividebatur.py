@@ -69,7 +69,7 @@ class Election:
     VERIFY_FLAG = 'verified'
     NUM_VACANCIES = 'vacancies'
 
-    def __init__(self):
+    def __init__(self, tie_break_string='TIE_BREAK_STRING'):
         self.electionID = "NoElection"       # string
         self.n = 0                           # integer
         self.seats = 0                       # integer
@@ -86,6 +86,8 @@ class Election:
         self.data_dir = None                 # string representing the directory path containing the election data
         self.contest_config = None           # dict containing contest-specific information (i.e. number of seats)
         self.data = None                     # data structure storing contest tickets, candidates, SCF, etc.
+
+        self.tie_break_string = tie_break_string  # string used in breaking ties related to the election
 
         """
         Remarks:
@@ -233,10 +235,8 @@ class Election:
             of hashes is returned as the index of the item to chose for breaking the given tie. Here the
             original index refers to the item's position in the input `items`.
             """
-            TIE_BREAK_STRING = 'TIE_BREAK_STRING'
-
             def get_sha256_hash_of_item(item):
-                return hashlib.sha256((str(item) + TIE_BREAK_STRING).encode('utf-8')).hexdigest()
+                return hashlib.sha256((str(item) + self.tie_break_string).encode('utf-8')).hexdigest()
 
             indices = sorted(range(len(items)), key=lambda i : get_sha256_hash_of_item(items[i]))
             return indices[0]
