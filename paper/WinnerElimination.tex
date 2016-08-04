@@ -27,7 +27,7 @@ Zara Perumal \and Ron Rivest
 Election auditing is well understood for plurality elections but difficult for complex voting schemes.  The Australian Senate uses the Single Transferable Vote (STV).  The data digitization is partially automated (which is a good thing), and the count itself is entirely automated.  There are many characteristics that make auditing challenging:
 
 \begin{itemize}
-\item Calculating winning margins for STV is NP hard in general, and the parameters of Australian elections (sometimes more than 150 candidates) make exact solutions infeasible in practice.  There are not even efficient methods for reliably computing good bounds. 	
+\item Calculating winning margins for STV is NP-hard in general, and the parameters of Australian elections (sometimes more than 150 candidates) make exact solutions infeasible in practice.  There are not even efficient methods for reliably computing good bounds. 	
 \item Since there are sometimes millions of votes in one constituency, a full hand count is infeasible.
 \item In practice the margins can sometimes be remarkably small.  For example, in Western Australia in 2013 a single lost box of ballots was found to be enough to change the election outcome.  In Tasmania in 2016, the final seat was determined by a difference of 141 votes 
 (a margin of 71) out of over 300,000.	
@@ -43,7 +43,7 @@ Helen Kroger of the Liberal party.  In the last elimination round (round 291), M
 %Her problem was that she was campaigning for the wrong person and got too many votes herself. 
 If Kroger had persuaded 1294 of her voters, and 1301 of Janet Rice (Greens)’s voters, to  vote instead for Joe Zammit (Australian Fishing and Lifestyle Party), this would have prevented Zammit from being excluded in count 224. Muir, deprived of Zammit's preferences, would have been excluded in the next count, and Kroger would have won.   (Our algorithm for searching for these small margins is described in Section~\ref{sec:winnerElimination}.)
 
-This change could be made by altering 2595 ballots, in each case swapping two preferences, none of them first preferences, all below the line.  First preferences are relatively well scrutinised in pollsite processes before dispatch to the central counting station.  Other preferences are not.   Also \emph{lowering} a particular candidate's preference wouldn't usually be expected to help that candidate (though we are not the first to notice STV's nonmonotonicity).  So the outcome could have been changed by swapping unscrutinised preferences, half of which seemed to disadvantage the candidate they actually helped, in far fewer ballots than anyone considered to be enough.  
+This change could be made by altering 2595 ballots, in each case swapping two preferences, none of them first preferences, all below the line.  First preferences are relatively well scrutinised in pollsite processes before dispatch to the central counting station.  Other preferences are not.   Also \emph{lowering} a particular candidate's preference wouldn't usually be expected to help that candidate (though we are not the first to notice STV's nonmonotonicity).  So the outcome could have been changed by swapping poorly-scrutinised preferences, half of which seemed to disadvantage the candidate they actually helped, in far fewer ballots than anyone considered to be enough.  
 
 \subsection{Our contribution}
 This paper describes two main suggested approaches to auditing the paper evidence of Australian Senate votes.  
@@ -83,7 +83,10 @@ Each audit round has three phases:
 \end{enumerate}
 
 
-Like any process that uses Bayes' Rule, choosing a prior is a key part of the initialization.  The suggestion in~\cite{rivest2012bayesian} is to allow any political partisan to choose the prior that most supports their political beliefs.  When everyone (who uses Bayes' Rule properly) is satisfied that the evidence points to the accuracy of the announced result, the audit can stop.  In the Australian Senate case, we assume that there will be only one apolitical auditing team (though in future candidate-appointed scrutineers could do the calculations themselves).  Hence we suggest a prior that slightly advantages everyone who lost---if the announced outcome is correct, this probability distribution will be gradually corrected towards it.
+Like any process that uses Bayes' Rule, choosing a prior is a key part of the initialization.  The suggestion in~\cite{rivest2012bayesian} is to allow any political partisan to choose the prior that most supports their political beliefs.  When everyone (who uses Bayes' Rule properly) is satisfied that the evidence points to the accuracy of the announced result, the audit can stop.  For example, the auditors could agree to stop when 95\% of simulated election outcomes match the reported outcome.
+
+
+In the Australian Senate case, we assume that there will be only one apolitical auditing team (though in future candidate-appointed scrutineers could do the calculations themselves).  Hence we suggest a prior that slightly advantages everyone who lost---if the announced outcome is correct, this probability distribution will be gradually corrected towards it.
 
 An alternative, simpler version amounts to a bootstrap, treating the population of reported ballots as
 if it is the (prior) probability distribution of ballots, and then seeing how often one gets the same result for samples drawn from that prior.  
