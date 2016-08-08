@@ -19,7 +19,55 @@ parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.sys.path.insert(0, parentdir)
 
 import dividebatur.dividebatur.senatecount as sc
-from  dividebatur.dividebatur.counter import Ticket
+import dividebatur.dividebatur.counter as cnt
+from dividebatur.dividebatur.results import BaseResults
+
+##############################################################################
+## Results of the count
+
+class APIResults(BaseResults):
+    """
+    minimal implementation of the dividebatur BaseResults abc,
+    merely tracking which candidates were elected. almost all
+    methods are stubs.
+    """
+
+    def __init__(self):
+        self.candidates_elected = []
+
+    def round_begin(self, round_number):
+        pass
+
+    def round_complete(self):
+        pass
+
+    def exclusion_distribution_performed(self, obj):
+        pass
+
+    def election_distribution_performed(self, obj):
+        pass
+
+    def candidate_aggregates(self, obj):
+        pass
+
+    def candidate_elected(self, obj):
+        """
+        Called by the counter when a candidate is elected.
+        ``obj`` is an instance of dividebatur.results.CandidateElected.
+        """
+        self.candidates_elected.append(obj.candidate_id)
+
+    def candidates_excluded(self, obj):
+        pass
+
+    def provision_used(self, obj):
+        pass
+
+    def started(self, vacancies, total_papers, quota):
+        pass
+
+    def finished(self):
+        pass
 
 ##############################################################################
 ## Candidates
@@ -149,13 +197,8 @@ class Election:
         except KeyError:
             pass
 
-        # Prepare filesystem to accept output of running election audits.
-        sc.cleanup_json(self.out_dir)
-        sc.write_angular_json(election_config, self.out_dir)
-
         # Get ticket data.
-        s282_candidates = sc.s282_recount_get_candidates(self.out_dir, self.contest_config, set())
-        self.data = sc.get_data(input_cls, self.data_dir, self.contest_config, s282_candidates=s282_candidates)
+        self.data = sc.get_data(input_cls, self.data_dir, self.contest_config)
 
         # Build remaining ticket data structure from tickets and randomly shuffle for sampling.
         for ticket, weight in self.data.tickets_for_count:
@@ -187,15 +230,6 @@ class Election:
             self.ballot_weights[ballot] = weight
         self.total_ballot_weight += weight
 
-    def convert_ticket_to_ballot(self, ticket):
-        """
-        `ticket.preferences` is a tuple containing a single tuple of (rank, candidate_id) pairs. 
-        We then convert this representation to a tuple of candidate IDs, sorted by rank.
-        """
-
-        preferences = sorted(ticket.preferences, key=lambda x : x[0])
-        return tuple(candidate_id for rank, candidate_id in preferences)
-
     def load_more_ballots(self, batch_size):
         """ 
         Expand the current sample by `batch_size` by adding each new BTL ballot with a weight of 1.
@@ -206,7 +240,7 @@ class Election:
         for _ in range(ballots_to_draw):
             # Pop off the first ticket in `self.remaining_tickets`, convert it from a ticket to a ballot,
             # and finally add it to the growing sample of ballots.
-            self.add_ballot(self.convert_ticket_to_ballot(self.remaining_tickets.pop(0)), 1)
+            self.add_ballot(self.remaining_tickets.pop(0), 1)
         self.ballots_drawn += ballots_to_draw
 
     def get_outcome(self, new_ballot_weights=None, **params):
@@ -244,10 +278,22 @@ class Election:
         # Reset tickets for count 
         self.data.tickets_for_count = sc.PapersForCount()
         for ballot, weight in ballot_weights.items():
-            # Build list of preferences as (rank, candidate_id) tuple pairs.
-            preferences = [(i, ballot[i - 1]) for i in range(1, len(ballot) + 1)]
-            ticket = Ticket(preferences)
-            self.data.tickets_for_count.add_ticket(ticket, weight)
+            self.data.tickets_for_count.add_ticket(tuple(ballot), weight)
 
-        _, outcome = sc.get_outcome(self.contest_config, self.data, self.data_dir, self.out_dir, automation_fn=tie_break_by_sha256_sort)
-        return tuple(sorted(electee[Election.ID] for electee in outcome[Election.ELECTED]))
+        # Set up the counter, and ask it to report results into our
+        # result tracking class
+        results = APIResults()
+        counter = cnt.SenateCounter(
+            results,
+            self.seats,
+            self.data.get_papers_for_count(),
+            self.data.get_candidate_ids(),
+            self.data.get_candidate_order,
+            disable_bulk_exclusions=True)
+        counter.set_election_order_callback(tie_break_by_sha256_sort)
+        counter.set_candidate_tie_callback(tie_break_by_sha256_sort)
+
+        # Run the count
+        counter.run()
+
+        return tuple(sorted(results.candidates_elected))
