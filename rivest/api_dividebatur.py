@@ -286,7 +286,7 @@ class Election:
         counter = cnt.SenateCounter(
             results,
             self.seats,
-            self.data.get_papers_for_count(),
+            self.data.tickets_for_count,
             self.data.get_candidate_ids(),
             self.data.get_candidate_order,
             disable_bulk_exclusions=True)
