@@ -16,7 +16,7 @@
 \begin{document}
 
 \title{Auditing Australian Senate Ballots}
-\author{Michelle Blom \and  Berj Chilingirian \and  Andrew Conway \and Chris Culnane \and 
+\author{Michelle Blom \and  Berj Chilingirian \and  Andrew Conway\thanks{Andrew Conway is a member of the Secular Party.} \and Chris Culnane \and 
 Grahame Bowland\thanks{Grahame Bowland is a member of the Australian Greens.  His contribution to this project has consisted entirely of help in implementing the Australian Senate counting rules and facilitating Bayesian audits using his code.  The statistical and computational techniques here are non-political.  If anything, the proposal to conduct an audit is more likely to disadvantage the Greens' last seat in Tasmania than any other seat.} \and Zara Perumal \and Ron Rivest 
  \and Philip Stark \and Vanessa Teague}
 \maketitle
@@ -120,26 +120,41 @@ what's needed to account for the apparent margin of 141 votes. 3 errors in a sam
 
 Section~\ref{sec:comparisonAudits} details the statistical analysis and some sharper ways of distinguishing errors that are likely to make a difference to the result.  \VTNote{Actaully I'm not sure it does.  Not sure there are any useful sharper distinctions.  Are the stats just binomial bounds again?}
 
-\subsection{A simple capped scheme}
+\subsection{Audits of fixed sample size}
 A much simpler alternative is to
 take a fixed sample size of paper ballots (e.g. 0.1\% of the cast ballots), draw that
 many ballots at random and examine them all.
-Binomial upper confidence bounds on the overall error rate could then be computed.  
 
 This conveniently puts a ``cap'' on the number of randomly-chosen 
 paper ballots to be examined, but 
 the audit results may provide less certainty than an uncapped
 audit would provide.
 
+\subsubsection{Risk-measuring audits}
+Binomial upper confidence bounds on the overall error rate could then be computed.  
+
 Even an error rate of 0.0004, {\it i.e.}, four ballots with errors per 10,000 ballots, could have changed the electoral result in Tasmania, depending on the exact nature of those errors. The sample size required to show that the error rate is below that threshold---if it is indeed below that threshold---is prohibitively large. 
 
 However, this method might be quite informative for other contests.   Manual inspection of a sample of 1,000 ballots could give 99\% confidence that the error rate is below 0.0046 (46 ballots with errors per 10,000 ballots), if the inspection finds no errors at all. If it finds one ballot with an error, there would be 99\% confidence that the error rate is below about 0.0066 (66 ballots with errors per 10,000 ballots).
+
+*** New email:
 
 Similarly, manual inspection of a sample of 500 ballots could give 99\% confidence that the error rate is below 0.0092 (92 ballots with errors per 10,000 ballots), if the inspection finds no errors at all. If it finds one ballot with an error, there would be 99\% confidence that the error rate is below about 0.0132 (132 ballots with errors per 10,000 ballots).
 
 If more errors are found, this gives a way to estimate the error rate.  If it is large, this would give a strong argument for larger audits in the future.
 
-\subsubsection{Combining with Bayesian Auditing} 
+a "risk-measuring audit."  The idea is to find the p-value (or confidence level) that the sample you actually have gives you that the outcome is right.
+
+I'm assuming that they are going to say "yes" to some fixed sample size that isn't too big (e.g, on the order of 500-2000 ballots), but not to any kind of escalation, regardless of what we find. If the sample looks bad enough, they might do a full hand count to avoid rioting.
+
+If they took a sample of 1,000 ballots and we find no errors that affect the 141 margin, the measured risk is the chance of seeing no errors if the true error rate is 0.0004, i.e.,
+
+$(0.0004)^0 * (1-0.0004)^1000 = 67\%.$
+
+If they took a sample of 2,000, the measured risk would be $(0.0004)^0 * (1-0.0004)^2000 = 45\%.$
+
+
+\subsubsection{Fixed-size samples with Bayesian Auditing} 
 We can also derive some partial confidence measures from the
 given sample.  For example, you could list, for each candidate,
 the precentage of the time that candidate was elected across the Bayesian
