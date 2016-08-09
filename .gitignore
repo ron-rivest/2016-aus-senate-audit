@@ -90,3 +90,11 @@ ENV/
 
 # Emacs backups
 *~
+
+# latex
+*.aux
+*.bbl
+*.blg
+*.out
+*.toc
+
