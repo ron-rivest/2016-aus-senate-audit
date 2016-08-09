@@ -28,6 +28,27 @@ Grahame Bowland\thanks{Grahame Bowland is a member of the Australian Greens.  Hi
 \end{abstract}
 
 \section{Introduction}
+Election outcomes must be accompanied by evidence that they accurately reflect the will of the voters.  One important principle is \emph{Software Independence}~\cite{rivest2008notion}, which says that 
+\begin{quote}
+A voting system is \emph{software indepedent} if an undetected change or error in its software cannot cause an undetectable change or error in an election outcome.
+\end{quote}
+
+This principle was articulated after security analyses of electronic voting machines in the USA showed that the systems were insecure.  The researchers found opportunities for widespread vote manipulation that could remain hidden, even from well-intentioned electoral officials who did their best to secure the systems.
+
+Followup research in Australia has shown election software, like any other software, to be prone to errors and security problems.  For this reason, evidence of an accurate Senate outcome needs to be derived directly from the paper ballots.  
+
+This paper suggests four different techniques for auditing the paper Senate ballots to check the accuracy of the published preference data files.  The techniques vary in their assumptions, the amount of work involved, and the confidence that can be obtained.
+
+These suggestions might be useful in two contexts:
+\begin{itemize}
+\item if there is a challenge to this year's Senate outcome, 
+\item as an AEC investigation of options for future elections.
+\end{itemize}
+
+In either case, the authors would be happy to help the AEC understand how to conduct the audit.  The key objective is to generate evidence that the election result is accurate, or to detect early that there has been a problem, in time for it to be corrected.  In the long run, we hope that these audits become a standard part of Australian election conduct.
+
+\subsection{Why the problem is hard}
+
 Election auditing is well understood for plurality elections but difficult for complex voting schemes.  The Australian Senate uses the Single Transferable Vote (STV).  The data digitization is partially automated (which is a good thing), and the count itself is entirely automated.  There are many characteristics that make auditing challenging:
 
 \begin{itemize}
