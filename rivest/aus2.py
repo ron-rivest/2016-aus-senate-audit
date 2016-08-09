@@ -11,6 +11,7 @@
 # Polya's urn method, for efficiency reasons.
 
 import collections
+import argparse
 import random
 # random.seed(1)    # make deterministic
 import time
@@ -20,12 +21,12 @@ from itertools import chain, groupby
 
 class RealElection(api.Election):
 
-    def __init__(self, contest_name):
+    def __init__(self, contest_name, max_ballots):
         """
         `contest_name` is the contest to load (e.g. 'TAS' or 'NT').
         """
         super(RealElection, self).__init__()
-        self.load_election(contest_name)
+        self.load_election(contest_name, max_ballots=max_ballots)
 
     def draw_ballots(self, batch_size=100):
         """ 
@@ -208,7 +209,10 @@ def audit(election, alpha=0.05, k=4, trials=100):
     print("Elapsed time:",time.time()-start_time,"seconds.")
 
 #audit(SimulatedElection(100,1000000))
-audit(RealElection('TAS'))
-          
-        
-    
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--max-ballots',
+        type=int, help="Maximum number of real ballots to read")
+    args = parser.parse_args()
+    audit(RealElection('TAS', max_ballots=args.max_ballots))
