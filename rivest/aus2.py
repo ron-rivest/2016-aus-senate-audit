@@ -21,7 +21,7 @@ class RealElection(api.Election):
 
     def __init__(self):
         super(RealElection, self).__init__()
-        api.load_election(self, "dirname-TBD")
+        self.load_election(contest_name, max_tickets=5000)
 
     def draw_ballots(self, batch_size=100):
         """ 
