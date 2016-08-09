@@ -79,18 +79,25 @@ Usage:
     .. code-block:: python3
 
         >>> import audit_tie_breaker
-        >>> atb = AuditTieBreaker(verbose=True)
+        >>> atb = AuditTieBreaker(['A', 'B', 'C', 'D', 'E', 'F', 'G'], verbose=True)
         >>> atb.load_events('contest_tie_breaking_events.json')
-        Building Audit Tie-Breaking Graph...
+        = Building Audit Tie-Breaking Graph...
          - Case 1: Added edge B->C.
          - Case 1: Added edge B->A.
          - Case 1: Added edge C->A.
          - Case 3: Added edge D->E.
          - Case 3: Added edge F->E.
          - Case 2: Added edge G->D.
-        --> Linear order determined as B, C, A, F, G, D, E.
+         --> Linear order determined as B, C, A, F, G, D, E.
+
+        = Verifying linear order is consisent with real election's tie-breaking events...
+         - Tie between ['A', 'B', 'C'] broken with ['B', 'C', 'A'] for case 1.
+         - Tie between ['D', 'E', 'F'] broken with E for case 3.
+         - Tie between ['D', 'G'] broken with G for case 2.
+         --> Linear order is consistent with real election's tie-breaking events.
+
         >>> atb.break_tie(['A', 'B', 'C'], 1)
-        Tie between ['A', 'B', 'C'] broken with ['B', 'C', 'A'] for case 1.
+         - Tie between ['A', 'B', 'C'] broken with ['B', 'C', 'A'] for case 1.
 """
 
 import itertools
