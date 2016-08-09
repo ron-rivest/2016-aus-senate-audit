@@ -123,10 +123,12 @@ class AuditTieBreaker(object):
 
     EVENTS_FILE_ERROR_MSG = 'The file {0} is not formatted correctly. Expected: \
     { \'events\': [(<RoundNumber>, <CandidateIDs>, <Resolution>, <CaseNm>),]}'
-    BUILDING_GRAPH_MSG = 'Building Audit Tie-Breaking Graph...'
+    BUILDING_GRAPH_MSG = '= Building Audit Tie-Breaking Graph...'
     ADDED_EDGE_MSG = ' - Case {0}: Added edge {1}->{2}.'
     LINEAR_ORDER_MSG = ' --> Linear order determined as {0}.'
-    TIE_BREAK_MSG = 'Tie between {0} broken with {1} for case {2}.'
+    VERIFY_LINEAR_ORDER_MSG = '\n= Verifying linear order is consisent with real election\'s tie-breaking events...'
+    IS_CONSISTENT_MSG = ' --> Linear order is consistent with real election\'s tie-breaking events.\n'
+    TIE_BREAK_MSG = ' - Tie between {0} broken with {1} for case {2}.'
 
     def __init__(self, candidate_ids, seed=1, verbose=False, out_f=None):
         """ Initializes the `AuditTieBreaker` object.
@@ -145,7 +147,7 @@ class AuditTieBreaker(object):
             information to (default: stdout). Only used when `verbose` is true.
         :type out_f: str
         """
-        random.seed(1)
+        random.seed(seed)
         self._vertices = {candidate_id : [] for candidate_id in candidate_ids}
         self._print_fn = AuditTieBreaker._setup_print_fn(out_f) if verbose else lambda x : None
         self._linear_order = {}
@@ -195,30 +197,32 @@ class AuditTieBreaker(object):
             events = json.load(json_file).get(AuditTieBreaker.EVENTS_KEY)
             if events is None:
                 raise Exception(AuditTieBreaker.EVENTS_FILE_ERROR_MSG.format(events_f))
-            self._print_fn(AuditTieBreaker.BUILDING_GRAPH_MSG)
-            for event in events:
-                try:
-                    round_num, candidate_ids, resolution, case_num = event
-                except:
-                    raise Exception(AuditTieBreaker.EVENTS_FILE_ERROR_MSG.format(events_f))
 
-                if len(resolution) == 1:
-                    # Cases 2, 3 - `resolution` is a single candidate ID.
-                    if case_num == 2:
-                        for cid in candidate_ids:
-                            if cid != resolution:
-                                self._vertices[resolution].append(cid)
-                                self._print_fn(AuditTieBreaker.ADDED_EDGE_MSG.format(2, resolution, cid))
-                    else:
-                        for cid in candidate_ids:
-                            if cid != resolution:
-                                self._vertices[cid].append(resolution)
-                                self._print_fn(AuditTieBreaker.ADDED_EDGE_MSG.format(3, cid, resolution))
+        # Construct audit tie-breaking graph.
+        self._print_fn(AuditTieBreaker.BUILDING_GRAPH_MSG)
+        for event in events:
+            try:
+                round_num, candidate_ids, resolution, case_num = event
+            except:
+                raise Exception(AuditTieBreaker.EVENTS_FILE_ERROR_MSG.format(events_f))
+
+            if len(resolution) == 1:
+                # Cases 2, 3 - `resolution` is a single candidate ID.
+                if case_num == 2:
+                    for cid in candidate_ids:
+                        if cid != resolution:
+                            self._vertices[resolution].append(cid)
+                            self._print_fn(AuditTieBreaker.ADDED_EDGE_MSG.format(2, resolution, cid))
                 else:
-                    # Case 1 - `resolution` is a permutation of candidate IDs.
-                    for src_cid, dest_cid in itertools.combinations(resolution, 2):
-                        self._vertices[src_cid].append(dest_cid)
-                        self._print_fn(AuditTieBreaker.ADDED_EDGE_MSG.format(1, src_cid, dest_cid))
+                    for cid in candidate_ids:
+                        if cid != resolution:
+                            self._vertices[cid].append(resolution)
+                            self._print_fn(AuditTieBreaker.ADDED_EDGE_MSG.format(3, cid, resolution))
+            else:
+                # Case 1 - `resolution` is a permutation of candidate IDs.
+                for src_cid, dest_cid in itertools.combinations(resolution, 2):
+                    self._vertices[src_cid].append(dest_cid)
+                    self._print_fn(AuditTieBreaker.ADDED_EDGE_MSG.format(1, src_cid, dest_cid))
 
         # Determine a random topological sorting of the vertices in the audit tie-breaking graph.
         vertices = sorted(self._vertices.keys())
@@ -228,6 +232,13 @@ class AuditTieBreaker(object):
             self._visit(v, linear_order)
         self._linear_order = {linear_order[i] : i for i in range(len(linear_order))}
         self._print_fn(AuditTieBreaker.LINEAR_ORDER_MSG.format(AuditTieBreaker.COMMA_DELIM.join(linear_order)))
+
+        # Verify linear order is consistent with the real election's tie-breakin events.
+        self._print_fn(AuditTieBreaker.VERIFY_LINEAR_ORDER_MSG)
+        for event in events:
+            round_num, candidate_ids, resolution, case_num = event
+            assert self.break_tie(candidate_ids, case_num) == resolution
+        self._print_fn(AuditTieBreaker.IS_CONSISTENT_MSG)
 
     def break_tie(self, candidate_ids, case_num):
         """ Returns the resolution for the given candidate IDs and case number.
@@ -270,6 +281,7 @@ def test_audit_tie_breaker():
     # Test `AuditTieBreaker` implementation.
     audit_tb = AuditTieBreaker(['A', 'B', 'C', 'D', 'E', 'F', 'G'], verbose=True)
     audit_tb.load_events(TMP_TEST_EVENTS_JSON)
+    audit_tb._print_fn('= Running AuditTieBreaker tests...')
     assert audit_tb.break_tie(['A', 'B', 'C'], 1) == ['B', 'C', 'A']
     assert audit_tb.break_tie(['D', 'E', 'F'], 3) == 'E'
     assert audit_tb.break_tie(['D', 'G'], 2) == 'G'
@@ -277,7 +289,7 @@ def test_audit_tie_breaker():
     assert audit_tb.break_tie(['B', 'F'], 3) == 'F'  # Test depends on random.seed of 1.
     # Clean up temporary test data file.
     os.unlink(TMP_TEST_EVENTS_JSON)
-    audit_tb._print_fn(' --- Tests PASSED! --- ')
+    audit_tb._print_fn(' --> Tests PASSED!')
 
 
 test_audit_tie_breaker()  # Runs AuditTieBreaker Tests.
