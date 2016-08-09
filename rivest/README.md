@@ -16,6 +16,8 @@ Current contents:
 
 ``api_dividebatur.py``  API for interface with dividebatur submodule for doing vote-counting.
 
+``audit_tie_breaker.py``  Routine to break ties during audit in a way consistent with how they were broken during official tally.
+
 ``aus.py``              Initial draft of Bayesian audit framework.
 
 ``aus2.py``             Revision of aus.py to use ``api.py``; also much more efficient since it uses ballot weights and gamma variates.
