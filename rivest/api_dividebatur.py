@@ -116,6 +116,9 @@ class Election:
     AEC_DATA = 'aec-data'
     VERIFY_FLAG = 'verified'
     NUM_VACANCIES = 'vacancies'
+    ELECTION_ORDER_TIES = 'election_order_ties'
+    ELECTION_TIES = 'election_ties'
+    EXCLUSION_TIES = 'exclusion_ties'
 
     def __init__(self):
         self.electionID = "NoElection"       # string
@@ -289,11 +292,12 @@ class Election:
             results,
             self.seats,
             self.data.tickets_for_count,
+            tie_break_by_sha256_sort,
+            tie_break_by_sha256_sort,
+            tie_break_by_sha256_sort,
             self.data.get_candidate_ids(),
             self.data.get_candidate_order,
             disable_bulk_exclusions=True)
-        counter.set_election_order_callback(tie_break_by_sha256_sort)
-        counter.set_candidate_tie_callback(tie_break_by_sha256_sort)
 
         # Run the count
         counter.run()
