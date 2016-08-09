@@ -130,7 +130,6 @@ class Election:
         self.remaining_tickets = []          # list of remaining tickets to draw ballots from.
 
         # `dividebatur` specific variables.
-        self.out_dir = None                  # string representing the directory path for writing election results
         self.data_dir = None                 # string representing the directory path containing the election data
         self.contest_config = None           # dict containing contest-specific information (i.e. number of seats)
         self.data = None                     # data structure storing contest tickets, candidates, SCF, etc.
@@ -145,7 +144,7 @@ class Election:
         same ballot in `self.remaining_tickets` (i.e. multiplicities are expanded).
         """
 
-    def load_election(self, contest_name, config_file=None, out_dir=None):
+    def load_election(self, contest_name, config_file=None, max_ballots=None):
         """
         Load election data for the contest with the provided name using the provided configuration file name. Sets
 
@@ -157,7 +156,6 @@ class Election:
 
         As well as `dividebatur`-specific instance variables
 
-            self.out_dir
             self.data_dir
             self.contest_config
             self.data
@@ -171,7 +169,6 @@ class Election:
         # Sets configuration file and out directory to default values if not set by caller.
         config_file = config_file or '../dividebatur/aec_data/fed2016/aec_fed2016.json'
         self.data_dir = os.path.dirname(os.path.abspath(config_file))
-        self.out_dir = out_dir or '../dividebatur/angular/data/'
 
         # Read the configuration file for the election data.
         election_config = sc.read_config(config_file)
@@ -197,8 +194,13 @@ class Election:
         except KeyError:
             pass
 
+        # options to be passed to dividebatur's data input code
+        data_options = {}
+        if max_ballots is not None:
+            data_options['max_ballots'] = max_ballots
+
         # Get ticket data.
-        self.data = sc.get_data(input_cls, self.data_dir, self.contest_config)
+        self.data = sc.get_data(input_cls, self.data_dir, self.contest_config, **data_options)
 
         # Build remaining ticket data structure from tickets and randomly shuffle for sampling.
         for ticket, weight in self.data.tickets_for_count:
