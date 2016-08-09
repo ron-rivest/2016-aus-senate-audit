@@ -18,6 +18,8 @@ Current contents:
 
 ``aus2.py``             Revision of aus.py to use ``api.py``; also much more efficient since it uses ballot weights and gamma variates.
 
+``sampler.py``          Routine for performing random sample of a set of ballots. (Needs modifications for use here.)
+
 
 
 
