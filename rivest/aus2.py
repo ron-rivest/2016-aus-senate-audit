@@ -13,20 +13,27 @@
 import collections
 import argparse
 import random
-# random.seed(1)    # make deterministic
 import time
 
 import api_dividebatur as api
 from itertools import chain, groupby
 
+
 class RealElection(api.Election):
 
-    def __init__(self, contest_name, max_ballots):
-        """
-        `contest_name` is the contest to load (e.g. 'TAS' or 'NT').
+    def __init__(self, contest_name, max_ballots, seed=1):
+        """ Initializes a `ReadElection` object.
+
+        :param contest_name: The name of the contest to load (e.g. 'TAS', or 'NT').
+        :type contest_name: str
+        :param max_ballots: The maximum number of ballots to read from the given
+            contest's election data.
+        :type max_ballots: int
+        :param seed: The random seed used to make results repeatable.
+        :type seed: int
         """
         super(RealElection, self).__init__()
-        self.load_election(contest_name, max_ballots=max_ballots)
+        self.load_election(contest_name, max_ballots=max_ballots, seed=seed)
 
     def draw_ballots(self, batch_size=100):
         """ 
@@ -213,6 +220,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--max-ballots',
-        type=int, help="Maximum number of real ballots to read")
+        type=int, help="Maximum number of real ballots to read.")
+    parser.add_argument(
+        '--seed',
+        type=int, help="Starting value of random number generator.")
     args = parser.parse_args()
-    audit(RealElection('TAS', max_ballots=args.max_ballots))
+    audit(RealElection('TAS', args.max_ballots, seed=args.seed))

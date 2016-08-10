@@ -18,6 +18,7 @@ import random
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.sys.path.insert(0, parentdir)
 
+from audit_tie_breaker import AuditTieBreaker
 import dividebatur.dividebatur.senatecount as sc
 import dividebatur.dividebatur.counter as cnt
 from dividebatur.dividebatur.results import BaseResults
@@ -136,6 +137,9 @@ class Election:
         self.data_dir = None                 # string representing the directory path containing the election data
         self.contest_config = None           # dict containing contest-specific information (i.e. number of seats)
         self.data = None                     # data structure storing contest tickets, candidates, SCF, etc.
+
+        # AuditTieBreaker instance.
+        self.atb = None
         """
         Remarks:
 
@@ -147,7 +151,7 @@ class Election:
         same ballot in `self.remaining_tickets` (i.e. multiplicities are expanded).
         """
 
-    def load_election(self, contest_name, config_file=None, max_ballots=None):
+    def load_election(self, contest_name, config_file=None, max_ballots=None, seed=1):
         """
         Load election data for the contest with the provided name using the provided configuration file name. Sets
 
@@ -211,14 +215,27 @@ class Election:
             # in `self.remaining_tickets`. We do this for ease of random sampling (e.g. note that a dictionary mapping
             # tickets to their corresponding weights does not facilitate easy random sampling).
             for _ in range(weight):
+                if max_ballots and len(self.remaining_tickets) >= max_ballots:
+                    break
                 self.remaining_tickets.append(copy.deepcopy(ticket))
-            self.n += weight
+                self.n += 1
+            if max_ballots and len(self.remaining_tickets) >= max_ballots:
+                    break
+
         print('Total number of ballots in contest:', self.n)
         random.shuffle(self.remaining_tickets)
 
         # Get candidate data.
         self.candidate_ids = self.data.get_candidate_ids()
         self.candidates = self.data.candidates.candidates
+
+        # Initialize AuditTieBreaker with tie-breaking information from the contest.
+        self.atb = AuditTieBreaker(self.candidate_ids)
+        self.atb.load_events(
+            self.contest_config[Election.ELECTION_ORDER_TIES],
+            self.contest_config[Election.ELECTION_TIES],
+            self.contest_config[Election.EXCLUSION_TIES],
+        )
     
     def add_ballot(self, ballot, weight):
         """ 
@@ -262,22 +279,6 @@ class Election:
 
         params may also control output (e.g. logging output).
         """
-        nonce = str(params['nonce'])
-        def tie_break_by_sha256_sort(items):
-            """
-            `tie_break_by_sha256_sort` takes a list of items. It then converts every item in the
-            list to a string and concatenates that string with the tie break string. This concatenation
-            is then unicode encoded and the SHA-256 is taken. These hashes are then converted to HEX and
-            sorted lexicographically. Finally, the original index of the first item in this sorted list
-            of hashes is returned as the index of the item to chose for breaking the given tie. Here the
-            original index refers to the item's position in the input `items`.
-            """
-            def get_sha256_hash_of_item(item):
-                return hashlib.sha256((str(item) + nonce).encode('utf-8')).hexdigest()
-
-            indices = sorted(range(len(items)), key=lambda i : get_sha256_hash_of_item(items[i]))
-            return indices[0]
-
         ballot_weights = new_ballot_weights or self.ballot_weights
 
         # Reset tickets for count 
@@ -292,9 +293,9 @@ class Election:
             results,
             self.seats,
             self.data.tickets_for_count,
-            tie_break_by_sha256_sort,
-            tie_break_by_sha256_sort,
-            tie_break_by_sha256_sort,
+            self.atb.break_election_order_tie,
+            self.atb.break_exclusion_tie,
+            self.atb.break_election_tie,
             self.data.get_candidate_ids(),
             self.data.get_candidate_order,
             disable_bulk_exclusions=True)
