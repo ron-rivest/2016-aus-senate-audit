@@ -279,47 +279,24 @@ for risk limit of 1\%, would need hand inspection of something like 24,000 ballo
 \subsection{Summary}
 These four different audit methods could each be conducted on the same dataset.  We would generate the sample by choosing random elements of the official preference data file, then fetching the corresponding paper ballot.  The Bayesian Audit and the simple capped scheme would then simply treat the paper ballots as the random sample.  The upper-bounds based scheme would consider the errors relative to what had been reported.
 
-\section{A description of the Senate screen-based verification process and an explanation of why its integrity guarantees are not sufficient}
-\VTNote{From Chris Culnane.  I've left this in for now so that the other authors can read it, but probably we just want to summarize the main points.}
-
-Details of the new senate counting system are fairly scarce. What information is provided raises further questions. However, we can tell that it is not software independent \cite{rivest08:e-vote}, and that there is little to no end-to-end auditing.  Election integrity seems to rely instead on the integrity of the software. 
-
-The audit steps that are included seem to exist to comply with the legislation, as opposed to guarantee an accurate result.  \VTNote{I think this is a really important point, though one that needs to be expanded upon in order not to sound snarky.  To put it the right way round, the legislation hasn't been adequately amended to consider how to guarantee integrity of automated scanning and counting.  So the AEC has had to implement a bunch of rules that don't really make sense any more, and they've lost sight of the more important criterion of providing evidence of an accurate election result.  In short, this is an argument for amending the legislation to require just the kind of audits we're now trying to do.}
-
-The information for this brief analysis has been garnered from the following reports:
-\begin{itemize}
-\item \url{http://www.aec.gov.au/elections/candidates/files/counting/css-faqs.pdf}
-\item \url{http://www.aec.gov.au/elections/candidates/files/counting/css-technical-aspects.pdf}
-\item \url{http://www.aec.gov.au/elections/candidates/files/counting/senate-count-process-diagram.pdf}
-\end{itemize}
+\section{Points of Trust within the Senate Counting Process}
+One of the problems with adopting a new Senate counting process is that the legislation around the scrutiny of the count has not kept pace with the technology and processes deployed to perform the count. As a result, the scruineering has lost a significant portion of its value. With the adoption of a new counting process the scrutineering procedures needed to be updated to target different aspects of the system. As a result of this not occurring, the current approach remains in compliance with the legislative requirements, but fails to provide actual assurance of correct operation. 
 
 The objective of the system is, in principle, extremely simple:
 capture the vote preferences from the ballot papers, and then publish
 \& tally them. Whilst internal audit steps are useful, an overarching
 audit of input to output would offer the strongest assurance, however,
-this does not take place. There are a number of points in the system
-where reconciliation is not clear, the work flow for the scanning is
-sufficiently complicated to provide potential avenues for mistakes and
-malicious behaviour. A lack of transparency in the overall approach
-results in an inability to determine if the potential weak points are
-sufficiently covered by scrutineering and reconciliation.
+this does not take place. 
 
-\subsection{Scanning and Counting Work Flow}
-The work flow has a number of troubling aspects:
-\begin{itemize}
-\item Why are ballots that are scanned as unmarked, and having come from an informal batch, excluded from further scrutiny? This seems to predispose informal ballots to rejection without further scrutiny.
-\item The flows are not 100\% accurate – in what scenario would a ballot paper, with matching scanning and data entry, end up in AEC adjudication? 
-\item Why do all flows lead to the Senate Counting System – is the senate counting system being fed informal votes, which it must then remove? If so, why are there no scrutineering steps detailed inside the AEC counting phase? Surely the informal votes are removed prior to being sent to the counting software?
-\item The cryptographic signature of the metadata seems to be generated as the last step prior to transmission to the AEC. As such, it is not a guarantee that the data has not changed since scanning, it only shows it has not changed during transmission or receipt. For example, after the data is classified as formal no further scrutiny is performed. As such, the integrity of the entire count is based on the trust of that central database, and every piece of software running on that server, to not alter a vote marked as formal. If an alteration did occur it would be undetectable. 
-\end{itemize}
+As a result of a lack of scrutiny the current implementation results in a number of points of trust, in which the integrity of the data is not checked and is dependent on the honest and error free operation of the respective software components. We shall highlights those points below: 
 
-\subsection{Transmission to AEC}
-\begin{itemize}
-\item Why use SFTP instead of SCP? SFTP provides an interactive session, which dependent on server settings, would allow moving, deleting, renaming of files. If all that is taking place is uploading, SCP would seem like a better choice, since it only allows file copying. There are also no details about how data received via SFTP is transferred into the Segregated Secure Network, what’s more, why is the cryptographic signature not checked prior to the data being submitted into the secure network – surely it should be checked on receipt and prior to processing on the segregated network. The EasyCount server also appears to be able to log to the System log, despite being on a segregated network?
-\end{itemize}
+\begin{description}
+ \item[Image Scanning] There appears to be no verification that the scanned image is an accurate representation of the paper ballot. As such, a malicious, or buggy, component could alter or reuse a scanned image, which would then be utilised for both the automatic and manual data entry. This would pass all subsequent scrutiny, whilst not being an accurate representation of the paper ballot.
+ \item[Ballot Data Storage] Whilst a cryptographic signature is produced at the end of the scanning \& processing stage, and prior to submission to the counting system, this signature is based on whatever is in the database. There is no scrutiny that the database accurately represents what was produced by the automatic recognition or the manual operator. An error, or malicious component, with access to the database could undetectably alter the contents. 
+ \item[Signature Checking] Automatic signature generation is a problem in the presence of a misbehaving device. In such circumstances there is no restriction on the device creating signatures on alternative data. Likewise, there appears to be no scrutiny over the data being sent between the scanning process and the counting process, particularly, that the sets of data are equal. There appears to be logging emanating from both services, but no clear description of how such logs will be reconciled and independently scrutinised. 
+\end{description}
 
-\subsection{Comparing cryptographic signature}
-Since the details of the signature scheme are not provided, or what PKI is deployed, it is difficult to assess the security of this step. Are signature files checked against a restricted list of public key certificates? Do signatures just need to have been signed by a valid key in a wider PKI? What checking is performed on the validity of incoming data, beyond the signature?
+Modernisation of election counting is, in itself, a good idea. However, as new processes and technology are deployed the auditing and scrutinisation of those processes needs updating. The new points of trust need to be identified and suitable auditing processes developed to allow the overall level of scrutiny to be maintained. This should be performed in an open and transparent manner to instil wider confidence in the system. 
 
 
 \longVersion{
