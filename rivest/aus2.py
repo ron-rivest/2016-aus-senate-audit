@@ -188,16 +188,17 @@ def audit(election, alpha=0.05, k=4, trials=100):
         for _ in range(trials):
             new_ballot_weights = get_new_ballot_weights(election, election.n)
             outcomes.append(election.scf(new_ballot_weights, nonce=nonce))
-
-        candidate_outcomes = collections.Counter(chain(*outcomes))
-        print("    " + "Fraction present in outcome by candidate: ")
-        print("    " + ', '.join([str(candidate) + ": " + str(c_freq/trials) for candidate,c_freq in candidate_outcomes.items()]))
-        
+      
         # find most common outcome and its number of occurrences
         best, freq = collections.Counter(outcomes).most_common(1)[0]
         print("    most common outcome (",election.seats,"seats ):")
         print("        ", best)
         print("    frequency of most common outcome:",freq,"/",trials)
+   
+        candidate_outcomes = collections.Counter(chain(*outcomes))
+       
+        print("    " + "Fraction present in outcome by candidate: ")
+        print("    " + ', '.join([str(candidate) + ": " + str(c_freq/trials) for candidate,c_freq in sorted(candidate_outcomes.items(),key=lambda x: (x[1],x[0]))]))
 
         # stop if best occurs almost always (more than 1-alpha of the time)
         if freq >= trials*(1.0-alpha):
