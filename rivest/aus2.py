@@ -157,7 +157,7 @@ def audit(election, alpha=0.05, k=4, trials=100):
     #dictionary from candidates to a set of ballots that elected them 
     candidate_ballot_map = {}
     #defines low frequency candidates
-    low_freq = 0.99
+    low_freq = 0.03
     candidate_outcomes = None
     # overall audit loop
     stage_counter = 0
