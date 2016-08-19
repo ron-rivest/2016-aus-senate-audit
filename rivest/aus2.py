@@ -194,11 +194,6 @@ def audit(election, alpha=0.05, k=4, trials=100):
         print("    most common outcome (",election.seats,"seats ):")
         print("        ", best)
         print("    frequency of most common outcome:",freq,"/",trials)
-   
-        candidate_outcomes = collections.Counter(chain(*outcomes))
-       
-        print("    " + "Fraction present in outcome by candidate: ")
-        print("    " + ', '.join([str(candidate) + ": " + str(c_freq/trials) for candidate,c_freq in sorted(candidate_outcomes.items(),key=lambda x: (x[1],x[0]))]))
 
         candidate_outcomes = collections.Counter(chain(*outcomes))
         print("    " + "Fraction present in outcome by candidate: ")
