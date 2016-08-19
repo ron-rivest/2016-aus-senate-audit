@@ -164,9 +164,16 @@ def audit(election, alpha=0.05, k=4, trials=100):
 
     start_time = time.time()
 
+    #dictionary from candidates to a set of ballots that elected them 
+    candidate_ballot_map = {}
+    #defines low frequency candidates
+    low_freq = 0.03
+    candidate_outcomes = None
     # overall audit loop
     stage_counter = 0
+
     while True:
+
         stage_counter += 1
         nonce = random.getrandbits(128)
         print("Audit stage number:", stage_counter)
@@ -187,8 +194,12 @@ def audit(election, alpha=0.05, k=4, trials=100):
         outcomes = []
         for _ in range(trials):
             new_ballot_weights = get_new_ballot_weights(election, election.n)
-            outcomes.append(election.scf(new_ballot_weights, nonce=nonce))
-      
+            outcome = election.scf(new_ballot_weights, nonce=nonce)
+            for candidate_id in outcome:
+                if candidate_id not in candidate_ballot_map.keys():
+                    candidate_ballot_map[candidate_id] = new_ballot_weights
+            outcomes.append(outcome)
+     
         # find most common outcome and its number of occurrences
         best, freq = collections.Counter(outcomes).most_common(1)[0]
         print("    most common outcome (",election.seats,"seats ):")
@@ -212,7 +223,11 @@ def audit(election, alpha=0.05, k=4, trials=100):
             break
 
         print()
-
+    if candidate_outcomes:
+        for candidate,c_freq in sorted(candidate_outcomes.items(),key=lambda x: (x[1],x[0])):
+            if c_freq/trials < low_freq:
+                print("    " + "One set of ballots that elected low frequency candidate: " + str(candidate) + " which occured in outcome with percent: " + str(c_freq))
+                print("    " + str(candidate_ballot_map[candidate])) 
     print("Elapsed time:",time.time()-start_time,"seconds.")
 
 #audit(SimulatedElection(100,1000000))
