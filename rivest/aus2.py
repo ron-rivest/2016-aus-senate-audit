@@ -239,5 +239,8 @@ if __name__ == '__main__':
     parser.add_argument(
         '--seed',
         type=int, help="Starting value of random number generator.")
+    parser.add_argument(
+        '--state',
+        type=str, help="State to audit. Valid options are TAS, QLD, NT, VIC, WA, ACT, NSW")
     args = parser.parse_args()
-    audit(RealElection('TAS', args.max_ballots, seed=args.seed))
+    audit(RealElection(args.state, args.max_ballots, seed=args.seed))
