@@ -1,5 +1,5 @@
 # aus2.py
-# July 30, 2016
+# July 31, 2016
 # python3
 # part of https://github.com/ron-rivest/2016-aus-senate-audit
 
@@ -11,32 +11,42 @@
 # Polya's urn method, for efficiency reasons.
 
 import collections
+import argparse
 import random
-# random.seed(1)    # make deterministic
 import time
 
-import api
+import api_dividebatur as api
 from itertools import chain, groupby
+
 
 class RealElection(api.Election):
 
-    def __init__(self):
+    def __init__(self, contest_name, max_ballots, seed=1):
+        """ Initializes a `ReadElection` object.
+
+        :param contest_name: The name of the contest to load (e.g. 'TAS', or 'NT').
+        :type contest_name: str
+        :param max_ballots: The maximum number of ballots to read from the given
+            contest's election data.
+        :type max_ballots: int
+        :param seed: The random seed used to make results repeatable.
+        :type seed: int
+        """
         super(RealElection, self).__init__()
-        self.load_election(contest_name, max_tickets=5000)
+        self.load_election(contest_name, max_ballots=max_ballots, seed=seed)
 
     def draw_ballots(self, batch_size=100):
         """ 
         add interpretation of random sample of real ballots
         to election data structure
         """
-        api.load_more_ballots(self, "filename-TBD")
+        self.load_more_ballots(batch_size)
 
-    def get_outcome(self, new_ballot_weights):
+    def scf(self, new_ballot_weights, nonce=None):
         """ 
         Return result of scf (social choice function) on this election. 
         """
-        ### call Bowland's code here
-        pass
+        return self.get_outcome(new_ballot_weights, nonce=nonce)
 
 class SimulatedElection(api.Election):
 
@@ -74,7 +84,7 @@ class SimulatedElection(api.Election):
             self.add_ballot(ballot, 1.0)
         self.ballots_drawn += batch_size
     
-    def get_outcome(self, new_ballot_weights):
+    def scf(self, new_ballot_weights, nonce=None):
         """ 
         Return result of scf (social choice function) on this sample. 
 
@@ -154,10 +164,18 @@ def audit(election, alpha=0.05, k=4, trials=100):
 
     start_time = time.time()
 
+    #dictionary from candidates to a set of ballots that elected them 
+    candidate_ballot_map = {}
+    #defines low frequency candidates
+    low_freq = 0.03
+    candidate_outcomes = None
     # overall audit loop
     stage_counter = 0
+
     while True:
+
         stage_counter += 1
+        nonce = random.getrandbits(128)
         print("Audit stage number:", stage_counter)
 
         # draw additional ballots and add them to election.ballots
@@ -176,8 +194,12 @@ def audit(election, alpha=0.05, k=4, trials=100):
         outcomes = []
         for _ in range(trials):
             new_ballot_weights = get_new_ballot_weights(election, election.n)
-            outcomes.append(election.get_outcome(new_ballot_weights))
-
+            outcome = election.scf(new_ballot_weights, nonce=nonce)
+            for candidate_id in outcome:
+                if candidate_id not in candidate_ballot_map.keys():
+                    candidate_ballot_map[candidate_id] = new_ballot_weights
+            outcomes.append(outcome)
+     
         # find most common outcome and its number of occurrences
         best, freq = collections.Counter(outcomes).most_common(1)[0]
         print("    most common outcome (",election.seats,"seats ):")
@@ -201,11 +223,24 @@ def audit(election, alpha=0.05, k=4, trials=100):
             break
 
         print()
-
+    if candidate_outcomes:
+        for candidate,c_freq in sorted(candidate_outcomes.items(),key=lambda x: (x[1],x[0])):
+            if c_freq/trials < low_freq:
+                print("    " + "One set of ballots that elected low frequency candidate: " + str(candidate) + " which occured in outcome with percent: " + str(c_freq))
+                print("    " + str(candidate_ballot_map[candidate])) 
     print("Elapsed time:",time.time()-start_time,"seconds.")
 
-audit(SimulatedElection(100,1000000))
-
-          
-        
-    
+#audit(SimulatedElection(100,1000000))
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--max-ballots',
+        type=int, help="Maximum number of real ballots to read.")
+    parser.add_argument(
+        '--seed',
+        type=int, help="Starting value of random number generator.")
+    parser.add_argument(
+        '--state',
+        type=str, help="State to audit. Valid options are TAS, QLD, NT, VIC, WA, ACT, NSW")
+    args = parser.parse_args()
+    audit(RealElection(args.state, args.max_ballots, seed=args.seed))
