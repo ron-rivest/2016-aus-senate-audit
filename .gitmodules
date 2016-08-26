@@ -1,6 +1,3 @@
 [submodule "dividebatur"]
 	path = dividebatur
 	url = https://github.com/grahame/dividebatur.git
-[submodule "aus-election-engine"]
-	path = aus-election-engine
-	url = https://github.com/zperumal/election-engine.git
