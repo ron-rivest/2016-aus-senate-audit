@@ -3,12 +3,14 @@
 # python3
 # part of https://github.com/ron-rivest/2016-aus-senate-audit
 
-# framework for AUS senate audit by Bayesian audit method
-# This codes derives from aus.py, but modified to utilize api.py
-# for interfacing with dividebatur code.
-# It has also been modified to use gamma-variates to draw from
-# Dirichlet posterior probability distribution, rather than using
-# Polya's urn method, for efficiency reasons.
+"""
+Framework for AUS senate audit by Bayesian audit method.
+This codes derives from aus.py, but modified to utilize api.py
+for interfacing with dividebatur code.
+It has also been modified to use gamma-variates to draw from
+Dirichlet posterior probability distribution, rather than using
+Polya's urn method, for efficiency reasons.
+"""
 
 import collections
 import random
@@ -19,6 +21,9 @@ import api
 from itertools import chain, groupby
 
 class RealElection(api.Election):
+    """
+    Class representing real election.
+    """
 
     def __init__(self):
         super(RealElection, self).__init__()
@@ -39,6 +44,9 @@ class RealElection(api.Election):
         pass
 
 class SimulatedElection(api.Election):
+    """
+    Class representing a simulated election (synthetic data).
+    """
 
     def __init__(self, m, n):
         super(SimulatedElection, self).__init__()
@@ -199,9 +207,10 @@ def audit(election, alpha=0.05, k=4, trials=100):
         global candidate_outcomes
         candidate_outcomes = collections.Counter(chain(*outcomes))
         print("    " + "Fraction present in outcome by candidate: ")
-        print("    " + ', '.join([str(candidate) + ": " + str(c_freq/trials) 
-                                  for candidate,c_freq in sorted(candidate_outcomes.items(),
-                                                                 key=lambda x: (x[1], x[0]))]))
+        print("    " + ', '.join([str(candidate) + ": " + str(c_freq/trials)
+                                  for candidate, c_freq
+                                  in sorted(candidate_outcomes.items(),
+                                            key=lambda x: (x[1], x[0]))]))
 
         # stop if best occurs almost always (more than 1-alpha of the time)
         if freq >= trials*(1.0-alpha):
@@ -220,12 +229,11 @@ def audit(election, alpha=0.05, k=4, trials=100):
         for candidate, c_freq in sorted(candidate_outcomes.items(),
                                         key=lambda x: (x[1], x[0])):
             if c_freq/trials < low_freq:
-                print("    " + "One set of ballots that elected low frequency candidate: " + str(candidate) + " which occured in outcome with percent: " + str(c_freq))
-                print("    " + str(candidate_ballot_map[candidate])) 
-    print("Elapsed time:",time.time()-start_time,"seconds.")
+                print("    " +
+                      "One set of ballots that elected low frequency candidate: " +
+                      str(candidate) + " which occured in outcome with percent: " +
+                      str(c_freq))
+                print("    " + str(candidate_ballot_map[candidate]))
+    print("Elapsed time:", time.time()-start_time, "seconds.")
 
-audit(SimulatedElection(100,1000000))
-
-          
-        
-    
+audit(SimulatedElection(100, 1000000))
