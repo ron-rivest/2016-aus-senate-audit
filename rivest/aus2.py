@@ -25,15 +25,15 @@ class RealElection(api.Election):
         self.load_election(contest_name, max_tickets=5000)
 
     def draw_ballots(self, batch_size=100):
-        """ 
+        """
         add interpretation of random sample of real ballots
         to election data structure
         """
         api.load_more_ballots(self, "filename-TBD")
 
     def get_outcome(self, new_ballot_weights):
-        """ 
-        Return result of scf (social choice function) on this election. 
+        """
+        Return result of scf (social choice function) on this election.
         """
         ### call Bowland's code here
         pass
@@ -43,8 +43,8 @@ class SimulatedElection(api.Election):
     def __init__(self, m, n):
         super(SimulatedElection, self).__init__()
         self.m = m                                 # number of candidates
-        self.candidates = list(range(1,self.m+1))  # {1, 2, ..., m}
-        self.candidate_ids = list(range(1,self.m+1))  # {1, 2, ..., m}
+        self.candidates = list(range(1, self.m+1)) # {1, 2, ..., m}
+        self.candidate_ids = list(range(1, self.m+1)) # {1, 2, ..., m}
         self.n = n                                 # number of cast ballots
         self.ballots_drawn = 0                     # cumulative
         self.seats = int(m/2)                      # seat best 1/2 of candidates
@@ -52,8 +52,8 @@ class SimulatedElection(api.Election):
                           time.asctime(time.localtime())
 
     def draw_ballots(self):
-        """ 
-        add simulated ballots (sample increment) for testing purposes 
+        """
+        add simulated ballots (sample increment) for testing purposes
         These ballots are biased so (1,2,...,m) is likely to be the winner
         More precisely, for each ballot candidate i is given a value i+v*U
         where U = uniform(0,1).  Then candidates are sorted into increasing
@@ -64,19 +64,19 @@ class SimulatedElection(api.Election):
         """
         m = self.m                                 # number of candidates
         v = m/2.0                                  # noise level (control position variance)
-        default_batch_size = 100                   
+        default_batch_size = 100
         batch_size = min(default_batch_size,
-                         self.n-self.ballots_drawn) 
+                         self.n-self.ballots_drawn)
         for _ in range(batch_size):
-            L = [ (idx + v*random.random(), candidate_id)
-                  for idx, candidate_id in enumerate(self.candidate_ids) ]
+            L = [(idx + v*random.random(), candidate_id)
+                 for idx, candidate_id in enumerate(self.candidate_ids)]
             ballot = tuple(candidate_id for (val, candidate_id) in sorted(L))
             self.add_ballot(ballot, 1.0)
         self.ballots_drawn += batch_size
-    
+
     def get_outcome(self, new_ballot_weights):
-        """ 
-        Return result of scf (social choice function) on this sample. 
+        """
+        Return result of scf (social choice function) on this sample.
 
         Here we use Borda count as a test scf.
         Returns tuple listing candidate_ids of winners in canonical (sorted) order,
@@ -100,7 +100,7 @@ class SimulatedElection(api.Election):
 # Drawing from Bayesian posterior (aka reweighting or fuzzing)
 
 def get_new_ballot_weights(election, r):
-    """ 
+    """
     Return dict new_ballot_weights for this election, based
     on using gamma variates to draw from Dirichlet distribution over
     existing ballots, based on existing ballot weights.
@@ -112,7 +112,7 @@ def get_new_ballot_weights(election, r):
     for ballot in election.ballots:
         old_weight = election.ballot_weights[ballot]
         if old_weight > 0:
-            new_ballot_weights[ballot] = random.gammavariate(old_weight,1.0)
+            new_ballot_weights[ballot] = random.gammavariate(old_weight, 1.0)
         else:
             new_ballot_weights[ballot] = 0.0
     total_weight = sum([new_ballot_weights[ballot]
@@ -120,13 +120,13 @@ def get_new_ballot_weights(election, r):
     for ballot in election.ballots:
         new_ballot_weights[ballot] = int(r * new_ballot_weights[ballot] / total_weight)
     return new_ballot_weights
-    
+
 ##############################################################################
 # Implementation of audit
 
 def audit(election, alpha=0.05, k=4, trials=100):
-    """ 
-    Bayesian audit of given election 
+    """
+    Bayesian audit of given election
 
     Input:
         election     # election to audit
@@ -136,11 +136,11 @@ def audit(election, alpha=0.05, k=4, trials=100):
     """
     print()
     print("Audit of simulated election")
-    print("ElectionID:",election.electionID)
+    print("ElectionID:", election.electionID)
     print("Candidates are:", election.candidates)
     print("Number of ballots cast:", election.n)
     print("Number of trials per sample:", trials)
-    print("Number of seats contested for:",election.seats)
+    print("Number of seats contested for:", election.seats)
     seed = int(random.random()*1000000000000)
     random.seed(seed)
     print("Random number seed:", seed)    # for reproducibility or debugging if needed
@@ -150,11 +150,11 @@ def audit(election, alpha=0.05, k=4, trials=100):
     # establish Bayesian prior.  The prior ballot is a length-one
     # partial ballot with just a first-choice vote for that candidate.
     for candidate_id in election.candidate_ids:
-        election.add_ballot((candidate_id,),1.0)
+        election.add_ballot((candidate_id,), 1.0)
 
     start_time = time.time()
 
-    #dictionary from candidates to a set of ballots that elected them 
+    #dictionary from candidates to a set of ballots that elected them
     candidate_ballot_map = {}
     #defines low frequency candidates
     low_freq = 0.03
@@ -168,18 +168,20 @@ def audit(election, alpha=0.05, k=4, trials=100):
         print("Audit stage number:", stage_counter)
 
         # draw additional ballots and add them to election.ballots
-        election.draw_ballots()   
+        election.draw_ballots()
 
         print("    sample size (including prior ballots) is",
               election.total_ballot_weight)
         print("    last ballot drawn:")
-        print("        ",election.ballots[-1])
+        print("        ", election.ballots[-1])
 
         # run trials in Bayesian manner
-        # Each outcome is a tuple of candidates who have been elected, 
+        # Each outcome is a tuple of candidates who have been elected,
         # in a canonical order. (NOT the order in which they were elected, say.)
         # We can thus test for equality of outcomes.
-        print("    doing",trials,"Bayesian trials (posterior-based election simulations) in this stage.")
+        print("    doing",
+              trials,
+              "Bayesian trials (posterior-based election simulations) in this stage.")
         outcomes = []
         for _ in range(trials):
             new_ballot_weights = get_new_ballot_weights(election, election.n)
@@ -188,16 +190,18 @@ def audit(election, alpha=0.05, k=4, trials=100):
                 if candidate_id not in candidate_ballot_map.keys():
                     candidate_ballot_map[candidate_id] = new_ballot_weights
             outcomes.append(outcome)
-     
+
         # find most common outcome and its number of occurrences
         best, freq = collections.Counter(outcomes).most_common(1)[0]
-        print("    most common outcome (",election.seats,"seats ):")
+        print("    most common outcome (", election.seats, "seats ):")
         print("        ", best)
-        print("    frequency of most common outcome:",freq,"/",trials)
+        print("    frequency of most common outcome:", freq, "/", trials)
         global candidate_outcomes
         candidate_outcomes = collections.Counter(chain(*outcomes))
         print("    " + "Fraction present in outcome by candidate: ")
-        print("    " + ', '.join([str(candidate) + ": " + str(c_freq/trials) for candidate,c_freq in sorted(candidate_outcomes.items(),key=lambda x: (x[1],x[0]))]))
+        print("    " + ', '.join([str(candidate) + ": " + str(c_freq/trials) 
+                                  for candidate,c_freq in sorted(candidate_outcomes.items(),
+                                                                 key=lambda x: (x[1], x[0]))]))
 
         # stop if best occurs almost always (more than 1-alpha of the time)
         if freq >= trials*(1.0-alpha):
@@ -213,7 +217,8 @@ def audit(election, alpha=0.05, k=4, trials=100):
 
         print()
     if candidate_outcomes:
-        for candidate,c_freq in sorted(candidate_outcomes.items(),key=lambda x: (x[1],x[0])):
+        for candidate, c_freq in sorted(candidate_outcomes.items(),
+                                        key=lambda x: (x[1], x[0])):
             if c_freq/trials < low_freq:
                 print("    " + "One set of ballots that elected low frequency candidate: " + str(candidate) + " which occured in outcome with percent: " + str(c_freq))
                 print("    " + str(candidate_ballot_map[candidate])) 
