@@ -75,7 +75,7 @@ This principle was articulated after security analyses of electronic voting mach
 
 Followup research in Australia  has shown election software, like any other software, to be prone to errors and security problems \cite{halderman2015new, CountingBug}.  For this reason, evidence of an accurate Senate outcome needs to be derived directly from the paper ballots.  
 
-One of the problems with adopting a new Senate counting process is that the legislation around the scrutiny of the count has not kept pace with the technology and processes deployed to perform the count. As a result, the scrutineering has lost a significant portion of its value. With the adoption of a new counting process the scrutineering procedures need to be updated to target different aspects of the system. The current approach seems to  comply with legislation, but fails to provide actual assurance of correct operation. 
+Legislation around the scrutiny of the count has not kept pace with the technology and processes deployed to perform the count. As a result, the scrutineering has lost a significant portion of its value. With the adoption of a new counting process the scrutineering procedures need to be updated to target different aspects of the system. The current approach might comply with legislation, but it doesn't give scrutineers evidence that the output is correct.
 
 This paper suggests four different techniques for auditing the paper Senate ballots to check the accuracy of the published preference data files.  The techniques vary in their assumptions, the amount of work involved, and the confidence that can be obtained.
 
@@ -85,7 +85,7 @@ These suggestions might be useful in two contexts:
 \item as an AEC investigation of options for future elections.
 \end{itemize}
 
-The key objective is to generate evidence that the election result is accurate, or to detect early that there has been a problem, in time for it to be corrected.  In the long run, we hope that these audits become a standard part of Australian election conduct.
+An audit should generate evidence that the election result is accurate, or detect that there has been a problem, in time for it to be corrected.  We hope that these audits become a standard part of Australian election conduct.
 
 \subsection{Q \& A}
 \begin{itemize}
@@ -96,7 +96,7 @@ The key objective is to generate evidence that the election result is accurate, 
 A: Many US states require by law, and routinely conduct, post-election audits of voter-verified paper votes when the tallies are conducted electronically.  Exact regulations vary---the best examples are the Risk-Limiting Audits \cite{bretschneider2012risk} conducted by California and Colorado.
 
 \item {\bf Q: What is needed to do a post-election audit?} \\
-    A: The audit begins with the preference data files\footnote{Strictly speaking, an audit could simply start by selecting random ballots from the collection, without looking at the data files first.  In the US, this style of audit, called a ``ballot-polling'' audit, is common.  In the Australian case, starting with the preference data files is much quicker than re-digitizing the paper records from scratch.  The Bayesian Audit is actually a ballot-polling audit, because it uses only information about the paper ballots, not about the discrepancies between the electronic and paper versions.  However, for practical reasons it is easier to conduct it by starting with the official digital records and editing the entry if there is an error.}, and (usually) relies on being able to retrieve the paper ballot corresponding to a particular vote in the file.  There must also be  time and people to retrieve the paper ballots and reconcile them with the preference data file.  A video of random ballot selection is here: \url{https://www.youtube.com/watch?v=sdWL8Unz5kM}.
+    A: The audit begins with the electronic list of ballots, and (usually) relies on being able to retrieve the paper ballot corresponding to a particular randomly-chosen vote in the file.  There must also be  time and people to retrieve the paper ballots and reconcile them with the preference data file.  A video of random ballot selection is here: \url{https://www.youtube.com/watch?v=sdWL8Unz5kM}.
 \item {\bf Q: How long does it take?  How many ballots must be examined?} \\ A: It depends on the audit method, the level of confidence derived, the size of the electoral margin and the number of errors in the sample.  This is described carefully below.    
 \item {\bf What is the difference between a statistical post-election audit and a recount?} \\ A: It's not feasible to do manual recounts; a statistical post-election audit would provide a comparable way of assessing the accuracy of the  outcome.
 %\item What legal authority is required to run a post-election audit in AUS?
@@ -142,6 +142,8 @@ In summary, there are plenty of opportunities for accidental or deliberate softw
 
 \subsection{Background on audits}
 The audit process begins with the electronic data file that describes full preferences for all votes in a state.  This file implies a \emph{reported election outcome} $R$, which is a set of winning candidates which we assume to be properly computed from the preferences in the data file.  (Actually we don't have to assume---we can check by rerunning the electronic count.)  Each line in the data file is a \emph{reported vote}---we denote them $r_1,\ldots,r_n$, where $n$ is the total number of voters in the state.  Each reported vote $r_i$ (including blank or informal ones) corresponds to an \emph{actual vote} $a_i$ expressed on paper, which can be retrieved to check whether it matches $r_i$\VTNote{\footnote{What about omissions?}}.   The whole collection of actual votes implies an \emph{actual election outcome} $A$.  We want to know whether $A = R$.
+
+The audit proceeds by retrieving and inspecting a random sample of paper ballots.  A \emph{comparison} audit chooses random votes from the electronic data file and compares each one with its corresponding paper ballot. The auditor records discrepancies between the paper and electronic votes.  A \emph{ballot polling} audit chooses paper ballots at random and records the votes, without using the electronic vote data.  
 
 Although the security of paper ballot processing is important, it's independent of the audit we describe here.  An audit checks whether the electronic result accurately reflects the paper evidence.  Of course if the paper evidence wasn't properly secured, that won't be detected by this process.  Our definition of ``correct'' is ``matching the retained paper votes.''
 
@@ -232,10 +234,29 @@ An alternative, simpler version amounts to a bootstrap, treating the
 population of reported ballots as if it is the (prior) probability
 distribution of ballots, and then seeing how often one gets the same
 result for samples drawn from that prior.  We have run this version of the audit 
-on the Tasmanian Senate outcome from 2016.  With a sample size of about 
-34,000 ballots,  95\% of trials produce the official outcome.  This gives an approximate
+on the Senate outcome from 2016.  Tasmania is the closest: a sample size of about 
+34,000 ballots is needed before 95\% of trials produce the official outcome.  This gives an approximate
 indication of how much auditing of paper ballots would be necessary, assuming that 
 the paper ballots were very similar to the electronic votes.
+
+Table~\ref{tab:bootstrapping} shows the number of samples needed in the bootstrapping version of the Bayesian Audit, in order to get 95\% of trials to match the official outcome. Only Queensland and Tasmania require more than 10,000 samples.
+
+\begin{table}
+\begin{tabular}{lll}
+{\bf State} & {\bf Number of votes (millions)} & {Audit sample size (thousands)} \\
+%ACT & & \\
+NSW & 4.4 & 4.6 \\
+NT & 0.1 & 1.5 \\
+Qld & 2.7 & 23 \\
+SA & 1.1 & 3 \\
+Tas & 0.34 & 38 \\
+Vic & 3.5 & 6 \\
+WA  & 1.4 & 9 \\
+\end{tabular}
+\caption{Sample sizes for 95\% agreement in bootstrap Bayesian Audit.}
+\label{tab:bootstrapping}
+\end{table}
+
 
 We suggest a combination of the two: have a single short partial ballot in
 favor of each candidate, combined with an empirical Bayes approach that
@@ -347,6 +368,8 @@ A risk limit of 1\% would require hand inspection of something like 24,000 ballo
 \subsection{Summary}
 These four different audit methods could each be conducted on the same dataset.  We would generate the sample by choosing random elements of the official preference data file, then fetching the corresponding paper ballot.  The Bayesian Audit and the simple capped scheme would then simply treat the paper ballots as the random sample.  The upper-bounds based scheme and the conditional risk limiting audiit would consider the errors relative to what had been reported.
 
+There are important details in exactly how the audit is conducted.  We suggest that the auditors not see the electronic vote before they are asked to digitize the paper---otherwise they are likely to be biased to agree.  However, we also suggest that they are notified in the case of a discrepancy and asked to double-check their result---this should increase the accuracy of the audit itself.
+
 If the rate of error is high then a high level of auditing is required.  With few or no errors, our best estimates of the necessary sample size for each technique applied to the Tasmanian 2016 Senate are:
 \begin{itemize}
 	\item for Bayesian audits, about 34,000 samples until 95\% of trials match the official outcome,
@@ -355,7 +378,7 @@ If the rate of error is high then a high level of auditing is required.  With fe
 	\item a conditional risk-limiting audit  would require about 24,000 ballots for a risk limit of 1\%, assuming no errors were found.
 \end{itemize}
 
-The other states would probably be significantly easier to audit as they do not seem to be as close.
+Most other states would probably be easier to audit as they do not seem to be as close (though Queensland is not far behind Tasmania).
 
 \longVersion{
 \section{Bayesian Audits and how to use them in the Australian Senate}
