@@ -1,0 +1,294 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[unicode=true]{hyperref}
+\hypersetup{
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+\title{\protect\hypertarget{_kijxneej980z}{}{}
+
+\protect\hypertarget{_1t5wdgb8h9yb}{}{}2016 AUS Senate Audit Workflow}
+\date{}
+
+\begin{document}
+\maketitle
+
+\subsection{}\label{section}
+
+\section{1. Overview}\label{overview}
+
+This document summarizes the election workflow used to audit the 2016
+Australian Senate Election.
+
+There are many ways that error can alter the outcome of elections. The
+Australian Senate Election has complex voting rules and delicate
+dependence on software, including OCR, which make the outcome
+particularly vulnerable to small errors. Auditing electronic results
+against the underlying voter-marked paper records can help determine the
+level of confidence warranted.
+
+\section{2. Workflow}\label{workflow}
+
+The audits we propose are incremental, in a series of rounds, starting
+with an initial sample of ballots. Tests determine whether the sample
+provides strong evidence that the electoral outcome is correct. If not,
+the sample is augmented and the process repeats, round after round,
+until the outcome is confirmed, until all ballots have been examined, or
+until a preset limit on time or audit resources has been met.
+
+Each time a sample is enlarged, randomly selected paper ballots are
+retrieved and interpreted manually (hand-to-eye), and those manual
+interpretations are recorded electronically. Those new electronic
+records are the basis of the audit computations.
+
+\subsection{2.1 Stage 1: Planning}\label{stage-1-planning}
+
+The in-charge of the audit will identify the individuals to participate
+in performing the audit.
+
+They will meet to review and refine the steps to be performed, the
+observation of each step, the allocation of resources, the time-table
+involved, any physical security protocols to be followed, the funding
+necessary for any expenses, the reporting protocols to be followed, the
+maintenance of chain of custody over the paper ballots, the
+determination as to which computers (laptops) will be employed and how
+they will initialized with the appropriate software, what procedures
+will be followed for handling exceptions or errors, etc.
+
+\subsection{2.2 Stage 2: Choosing Ballots to be
+Audited}\label{stage-2-choosing-ballots-to-be-audited}
+
+Paper ballots are selected at random for transcription and auditing,
+using a pseudo-random number generator seeded with a publicly-chosen
+random value. The output of this stage is a set of listing specified
+which paper ballots will be audited in each round of the audit.
+
+\subsubsection{2.2.1 Generate Random Seed
+Publicly}\label{generate-random-seed-publicly}
+
+The seed in the pseudo-random number generator is set using a physical
+source of randomness, by rolling 24 10-sided dice. This ensures that the
+ballots to be selected are truly unpredictable, but that the process is
+repeatable, starting from the archived seed. The dice-rolling should be
+a public ceremony, observed by a number of scrutineers from the various
+parties.
+
+\subsubsection{\texorpdfstring{2.2.2 Running \emph{Sampler -\/- Choosing
+Random
+Numbers}}{2.2.2 Running Sampler -\/- Choosing Random Numbers}}\label{running-sampler----choosing-random-numbers}
+
+To choose the paper ballots to review, we run \emph{sampler.py. }
+
+We run sampler with the following parameters:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \begin{quote}
+  Election Id: ``2016 AUS Senate Election {[}STATE{]} Audit Round
+  {[}\#{]}''
+  \end{quote}
+\item
+  \begin{quote}
+  Random seed: 24 decimal digits generated in step 2.1.1
+  \end{quote}
+\item
+  \begin{quote}
+  Output range: 2 to number of rows in
+  \emph{aec-senate-formalpreferences-STATE.csv}.
+  \end{quote}
+\item
+  \begin{quote}
+  Duplicates ok: no
+  \end{quote}
+\item
+  \begin{enumerate}
+  \def\labelenumii{\alph{enumii}.}
+  \item
+    \begin{quote}
+    Expanded version of sample: No if first round, yes for subsequent
+    round. If non-first round enter the total cumulative number of
+    ballots previously sampled.
+    \end{quote}
+  \item
+    \begin{quote}
+    How many ballots: \textbf{1500}
+    \end{quote}
+  \end{enumerate}
+\item
+  \begin{quote}
+  Output file: ``2016\_AUS\_Senate\_Election\_{[}STATE{]}\_Audit
+  Round\_{[}\#{]}.txt''
+  \end{quote}
+\end{enumerate}
+
+\subsubsection{2.2.3 Listing Ballots}\label{listing-ballots}
+
+At each round after sampler.py has been run, a csv will be generated
+named selected\_ballots\_round\_\# to facilitate retrieval of ballots by
+election officials. This CSV will be generated by running
+sampleballotgenerator.py using the sampler.py output and
+\emph{aec-senate-formalpreferences-STATE.csv} as input. The generated
+csv named \emph{selected\_ballots\_round\_\#.csv} can be printed with 47
+rows per page. The original preference information is \emph{not} listed
+here, to prevent bias on the part of the auditors.
+
+The CSV header \emph{selected\_ballots\_round\_\#.csv} is as follows:
+
+\emph{ElectorateNm, VoteCollectionPointNm, VoteCollectionPointId,
+BatchNo, PaperNo, Preferences}
+
+\subsection{2.3 Stage 3: Obtaining and transcribing the selected paper
+ballots}\label{stage-3-obtaining-and-transcribing-the-selected-paper-ballots}
+
+The selected\_ballots\_round\_\#.csv will be sent to the officials for
+the counting step. At least two election officials are required at this
+stage to verify correctness at each step.
+
+\subsubsection{2.3.1 Retrieving ballots}\label{retrieving-ballots}
+
+At this step a pair of election officials will take the a page of
+\emph{SelectedBallots.csv} and retrieve the ballots listed on the sheet.
+They will take the sheet and retrieve ballots in the following manner.
+For each ballot in the list, both officials will confirm its placement
+in the pile. When a ballot is extracted, officials will place a yellow
+sticky note in the batch with the appropriate ballot information:
+(District, batch, paper no) and place a pink sticky note with identical
+information on the extracted ballot.
+
+These ballots will be placed in order in a ballot box and brought over
+for manual entry, with the corresponding sheet. Batch's open
+
+\protect\hypertarget{_lba7oli3yiio}{}{}2.3.2 Ballot Entry
+
+The preferences observed on the obtained paper ballots will be entered
+into \emph{selected\_ballots\_round\_\#.csv.} From the box of collected
+ballots, each ballot will be read and the preferences reinterpreted by
+both election officials directly from the paper ballots. Once the
+election officials agree on the preferences, they will enter the
+preferences in the \emph{selected\_ballots\_round\_\#.csv} preference
+field as a list of candidate IDs.
+
+\subsubsection{2.3.3 Entry review}\label{entry-review}
+
+Once the all the ballots have been entered into the
+\emph{selected\_ballots\_round\_\#.csv.} The form will be sent to the
+audit group to run the audits on the new records.
+
+\subsection{2.4 Running Audits}\label{running-audits}
+
+\subsubsection{2.4.1 Generating Audit Data}\label{generating-audit-data}
+
+From the filled out \emph{selected\_ballots\_round\_\#.csv and
+aec-senate-formalpreferences-STATE.csv} generate\_recount\_data.py will
+be run to create a new CSV with the recount preferences and whether the
+initial and recounted preferences match. The header for the
+
+\emph{aec\_senate\_formal\_preferences\_audit\_round\_\#\_.csv} will be
+as follows\emph{:}
+
+\emph{ElectorateNm, VoteCollectionPointNm, VoteCollectionPointId,
+BatchNo, PaperNo, Preferences, RecountPreferences, Match}
+
+\subsubsection{2.4.1 Concatenate Data}\label{concatenate-data}
+
+From the new
+\emph{aec\_senate\_formal\_preferences\_audit\_round\_\#\_.csv} the data
+will be appended to
+\emph{aec\_senate\_formal\_preferences\_audit\_aggregate.csv} to form a
+combined data set for the audit round.
+
+\subsubsection{2.4.2 Run Audit}\label{run-audit}
+
+From the \emph{aec\_senate\_formal\_preferences\_audit\_aggregate.csv,}
+various audits will be run to determine whether to proceed with another
+round.
+
+\section{3 Design Considerations / Open
+Questions}\label{design-considerations-open-questions}
+
+\subsection{3.1 Number of Ballots}\label{number-of-ballots}
+
+1500 ballots were chosen as the size of ballots per round.
+
+\subsection{3.2 Current Tabulation
+System}\label{current-tabulation-system}
+
+Although the current tabulation system operates of of scans, we require
+hand to eye interpretations of ballots as the most accurate means of
+verifying the outcome.
+
+\section{4 Requirements}\label{requirements}
+
+\subsection{4.1 Ballot Selection}\label{ballot-selection}
+
+For ballot selection, two distinct people and some ten-sided dice are
+needed. Also, the following software andtools are required: Python,
+sampler.py, \emph{aec-senate-formalpreferences.csv}. , and
+ballot\_selector.py
+
+\subsection{4.2 Ballot Counting}\label{ballot-counting}
+
+Each ballot counting stage requires 2 people per entry or ballot
+retrieval step, aec\_senate\_formal\_preferences\_audit\_round\_\#\_.csv
+and selected\_ballots.csv.
+
+\subsection{4.3 Running Audit}\label{running-audit}
+
+In order to run the audit the following software and tools are required:
+
+The audit code here:
+\href{https://github.com/ron-rivest/2016-aus-senate-audit}{\emph{https://github.com/ron-rivest/2016-aus-senate-audit}}
+needs to be installed with the dividebatur code in the root directory of
+the 2016-aus-senate-audit directory:
+\href{https://github.com/grahame/dividebatur/tree/master/dividebatur}{\emph{https://github.com/grahame/dividebatur/tree/master/dividebatur}}
+. These tools require Python 3, git lfs, and numpy.
+
+These tools are currently being refactored, and access to an AWS image
+with the libraries and bash run scripts can be requested by emailing
+\href{mailto:zperumal@mit.edu}{\emph{zperumal@mit.edu}}.
+
+\section{5 Future Work }\label{future-work}
+
+\end{document}
