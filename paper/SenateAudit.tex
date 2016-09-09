@@ -152,7 +152,7 @@ Although the security of paper ballot processing is important, it's independent 
 
 An election audit is an attempt to test the hypothesis ``That the reported election outcome is incorrect,'' that is, that $R \neq A$.  There are two kinds of wrong answer: an audit may declare that the official election outcome is correct when in fact it is wrong, or it may declare that the official outcome is wrong when in fact it is correct.  The latter problem is easily solved in simpler contexts by never declaring an election outcome wrong, but instead declaring that a full manual recount is required.  The first problem, of mistakenly declaring an election outcome correct when it is not, is the main concern of this paper.
 
-An audit is \emph{Risk-limiting} \cite{lindemanStark12} if it guarantees an upper bound on the probability of mistakenly declaring a wrong outcome correct.  A full manual recount is risk-limiting, but prohibitively expensive in our setting.  None of the audits suggested in this paper are proven to be risk limiting, however all of them provide some way of estimating the rate of errors and hence the likelihood that the announced outcome is wrong.  In some cases, the audit may not say conclusively whether the error rate is large enough to call the election result into question.  In others, we can derive some confidence either that the announced outcome is correct or that a manual inspection of all ballots is warranted.
+An audit is \emph{Risk-limiting} \cite{lindemanStark12} if it guarantees an upper bound on the probability of mistakenly declaring a wrong outcome correct.  A full manual recount is risk-limiting, but prohibitively expensive in our setting.  None of the audits suggested in this paper is proven to be risk limiting, however all of them provide some way of estimating the rate of errors and hence the likelihood that the announced outcome is wrong.  In some cases, the audit may not say conclusively whether the error rate is large enough to call the election result into question.  In others, we can derive some confidence either that the announced outcome is correct or that a manual inspection of all ballots is warranted.
 
 
 \subsection{Why auditing the Australian Senate is hard}
@@ -164,8 +164,8 @@ There are many characteristics that make auditing challenging:
 \begin{itemize}
 	\item {\bf It is hard to compute how many votes it takes to change the outcome.}  Calculating winning margins for STV is NP-hard in general~\cite{Xia2012}, and the parameters of Australian elections (sometimes more than 150 candidates) make exact solutions infeasible in practice.  There are not even efficient methods for reliably computing good bounds. 	
 	\item {\bf A full hand count is infeasible,} since there are sometimes millions of votes in one constituency, 
-	\item {\bf In practice the margins can sometimes be remarkably small.}  For example, in Western Australia in 2013 a single lost box of ballots was found to be enough to change the election outcome.  In Tasmania in 2016, the final seat was determined by a difference of 141 votes 
-	(a margin of 71) out of over 300,000.	
+	\item {\bf In practice the margins can sometimes be remarkably small.}  For example, in Western Australia in 2013 a single lost box of ballots was found to be enough to change the election outcome.  In Tasmania in 2016 there were more than 300,000 votes, but the final seat was determined by a difference of 141 votes 
+	(meaning errors in the interpretation of 71 ballots might have altered the outcome).	
 \end{itemize}
 
 This makes it difficult to use existing post-election auditing methods.   
@@ -364,7 +364,7 @@ This can be run as a ballot-level comparison audit, in which the electronic ball
 A risk-limiting audit could be based on the Kaplan-Markov  method from~\cite{stark2008conservative}.  It allows the sample to continue to expand if errors are found: that is, it involves sequential testing. 
 %(The particular method is the Kaplan-Markov method using constants that make the ``cost'' of a two-vote overstatement 5 times the ``cost'' of a 1-vote overstatement.) 
 At 1\% risk limit, the method requires an initial sample size of about (10/margin), where the margin is expressed as a fraction of the total ballots cast. Here, that's about 0.0004.
-A risk limit of 1\% would require hand inspection of something like 24,000 ballots, assuming no errors were found.\footnote{These numbers are derived from tools at {\url{https://www.stat.berkeley.edu/~stark/Java/Html/auditTools.htm}} } 
+A risk limit of 1\% would require hand inspection of roughtly 24,000 ballots, assuming no errors were found.\footnote{These numbers are derived from tools at {\url{https://www.stat.berkeley.edu/~stark/Java/Html/auditTools.htm}} } 
 
 \shortVersion{}\longVersion{More details about this method are in Section~\ref{sec:ConditionalRLAs}.}
 
@@ -376,7 +376,7 @@ There are important details in exactly how the audit is conducted.  We suggest t
 If the rate of error is high then a high level of auditing is required.  With few or no errors, our best estimates of the necessary sample size for each technique applied to the Tasmanian 2016 Senate are:
 \begin{itemize}
 	\item for Bayesian audits, about 34,000 samples until 95\% of trials match the official outcome,
-	\item for ``negative'' audits, a sample that found 3 errors out of 1000 ballots would give a 99\% confidence bound on the error rate (being big enough),
+	\item for ``negative'' audits, a sample that found 3 or more errors out of 1000 ballots would give a 99\% confidence bound on the error rate (being big enough),
 	\item a fixed sample size of 500 or 1000, even with no errors, seems unlikely to be large enough to infer anything meaningful for Tasmania 2016, though it may be useful for other contexts,
 	\item a conditional risk-limiting audit  would require about 24,000 ballots for a risk limit of 1\%, assuming no errors were found.
 \end{itemize}
