@@ -131,7 +131,7 @@ The key objective is to provide evidence that the announced election outcome is 
 This very brief security analysis of the current process is based on documents on the AEC's website  \cite{AECSenateDesign}.
 The objective of the system is, in principle, extremely simple:
 capture the vote preferences from the ballot papers, and then publish
-\& tally them. 
+and tally them. 
 
 The current implementation results in a number of points of trust, in which the integrity of the data is not checked by humans and is dependent on the secure and error-free operation of the software. Whilst internal audit steps are useful, there are many systematic errors and security problems they would not detect.  We list the three most obvious examples below. 
 
@@ -273,7 +273,7 @@ some time to run.  Answers to these challenges are described in
 \shortVersion{the full version of the paper.}\longVersion{Section~\ref{sec:bayes}.}
 
 \subsection{Upper bounds on the margin plus ``negative'' audits}  \label{subsec:upperBounds}
-In \longVersion{Section~\ref{sec:winnerElimination}}\shortVersion{the full version of this paper} we describe efficient heuristics for finding small changes to the votes that make a difference to the election outcome.  The Kroger/Muir margin described in the Introduction is an example.     
+We have implemented some efficient heuristics for searching for ways to change the election outcome by altering only a small number of votes---the code is available at \url{https://github.com/SiliconEconometrics/PublicService}.  The Kroger/Muir margin described in the Introduction is an example.   \longVersion{The algorithm is described in~Section~\ref{sec:winnerElimination}.} 
 %The other consists of extending techniques for computing the IRV margin of victory to the last rounds of an STV count.  
 We can guarantee that the solution we find is genuine, {\it i.e.} a true way to change the outcome with that number of ballots, but we can't guarantee that it is minimal---there might be an even smaller margin that remains unknown.  The algorithm produces a list of alternative outcomes together with an upper bound on the number of votes that need to change to produce them.
 
@@ -288,10 +288,9 @@ Suppose we know that the outcome could be altered by altering no more than $X$ b
 we think the true ballot error rate $p$ (ballots with errors divided by total ballots, no matter how many errors each ballot has) is $q$, with $qN \gg X$; that is, we think the error rate is large enough that the outcome could easily be wrong.  Then a modest sample
 of size $n$ should let us infer with high confidence that $pN > X$. 
 
-For example, consider the 2016 Tasmanian Senate result, in which the final margin was 141 out of 339,159 votes.  We can compute the confidence bounds based on a binomial distribution.  A lower 99\% confidence bound for $p$ if we find 3 ballots with errors in a sample of size 500 is about 0.0009, more than double
-what's needed to account for the apparent margin of 141 votes. 3 errors in a sample size of 1000 would give a lower bound of 0.00044, which is still higher than
-141/339,159, which is 0.00042.  If we did find errors at about that rate, it would be strong evidence that a full re-examination of all the paper ballots is warranted.
-
+For example, consider the 2016 Tasmanian Senate result, in which the final margin was 71 out of 339,159 votes (a difference of 141 votes).  We can compute the confidence bounds based on a binomial distribution.  A lower 95\% confidence bound for $p$ if we find 3 ballots with errors in a sample of size 2500 is about 0.0003.  That's much greater than the error rate of 
+$71/339,159 = 0.00021$ that would be needed to change the outcome.
+If we did find errors at about that rate, it would be strong evidence that a full re-examination of all the paper ballots is warranted.  Code for this and other probability computations in this paper is available at \url{https://gist.github.com/pbstark/58653bbc26f269d4588ea7cd5b2e12bf}.
 
 \longVersion{Section~\ref{sec:comparisonAudits} details the statistical analysis and some sharper ways of distinguishing errors that are likely to make a difference to the result.  \VTNote{Actually I'm not sure it does.  Not sure there are any useful sharper distinctions.  Are the stats just binomial bounds again?}}
 
@@ -310,9 +309,9 @@ audit would provide.
 Assume now that the aim is to try to find confidence that the election outcome is correct.  This audit could quantify the confidence in that assertion, by computing binomial upper confidence bounds on the overall error rate.    The idea is to find the p-value (or confidence level) that the sample you actually have gives you that the outcome is right.
 
 
-Even an error rate of 0.0004, {\it i.e.}, four ballots with errors per 10,000 ballots, could have changed the electoral result in Tasmania, depending on the exact nature of those errors. The sample size required to show that the error rate is below that threshold---if it is indeed below that threshold---is prohibitively large. 
-If we take a sample of 1,000 ballots and we find no errors that affect the 141 margin, the measured risk is the chance of seeing no errors if the true error rate is 0.0004, {\it i.e.,} $(0.0004)^0 * (1-0.0004)^{1000} = 67\%.$
-If we took a sample of 2,000, the measured risk would be $(0.0004)^0 * (1-0.0004)^{2000} = 45\%.$
+Even an error rate of 0.0002, {\it i.e.}, two ballots with errors per 10,000 ballots, could have changed the electoral result in Tasmania, depending on the exact nature of those errors. The sample size required to show that the error rate is below that threshold---if it is indeed below that threshold---is prohibitively large. 
+If we take a sample of 1,000 ballots and we find no errors that affect the 71 margin, the measured risk is the chance of seeing no errors if the true error rate is 0.0002, {\it i.e.,} $(0.0002)^0 * (1-0.0002)^{1000} = 81\%.$
+If we took a sample of 2,000, the measured risk would be $(0.0002)^0 * (1-0.0002)^{2000} = 67\%.$
 
 However, this method might be quite informative for other contests.   Manual inspection of a sample of 1,000 ballots could give 99\% confidence that the error rate is below 0.0046 (46 ballots with errors per 10,000 ballots), if the inspection finds no errors at all. If it finds one ballot with an error, there would be 99\% confidence that the error rate is below about 0.0066 (66 ballots with errors per 10,000 ballots).
 
@@ -363,8 +362,9 @@ asserts a particular alternative. This method would provide evidence that the er
 This can be run as a ballot-level comparison audit, in which the electronic ballot record is directly compared with its paper source.  When an error is detected, its impact on the final margin can be quantified  (a computationally infeasible problem when considering all possible alternative outcomes).  
 A risk-limiting audit could be based on the Kaplan-Markov  method from~\cite{stark2008conservative}.  It allows the sample to continue to expand if errors are found: that is, it involves sequential testing. 
 %(The particular method is the Kaplan-Markov method using constants that make the ``cost'' of a two-vote overstatement 5 times the ``cost'' of a 1-vote overstatement.) 
-At 1\% risk limit, the method requires an initial sample size of about (10/margin), where the margin is expressed as a fraction of the total ballots cast. Here, that's about 0.0004.
-A risk limit of 1\% would require hand inspection of roughtly 24,000 ballots, assuming no errors were found.\footnote{These numbers are derived from tools at {\url{https://www.stat.berkeley.edu/~stark/Java/Html/auditTools.htm}} } 
+At 1\% risk limit, the method requires an initial sample size of about (10/margin), where the margin is expressed as a fraction of the total ballots cast. Here, that's about 0.0002.
+A risk limit of 5\% would require hand inspection of roughly 16,000 ballots, assuming no errors were found.
+%\footnote{These numbers are derived from tools at {\url{https://www.stat.berkeley.edu/~stark/Java/Html/auditTools.htm}} } 
 
 \shortVersion{}\longVersion{More details about this method are in Section~\ref{sec:ConditionalRLAs}.}
 
@@ -376,9 +376,9 @@ There are important details in exactly how the audit is conducted.  We suggest t
 If the rate of error is high then a high level of auditing is required.  With few or no errors, our best estimates of the necessary sample size for each technique applied to the Tasmanian 2016 Senate are:
 \begin{itemize}
 	\item for Bayesian audits, about 34,000 samples until 95\% of trials match the official outcome,
-	\item for ``negative'' audits, a sample that found 3 or more errors out of 1000 ballots would give a 99\% confidence bound on the error rate (being big enough),
+	\item for ``negative'' audits, a sample that found 3 or more errors out of 2500 ballots would give a 95\% confidence bound on the error rate (being big enough),
 	\item a fixed sample size of 500 or 1000, even with no errors, seems unlikely to be large enough to infer anything meaningful for Tasmania 2016, though it may be useful for other contexts,
-	\item a conditional risk-limiting audit  would require about 24,000 ballots for a risk limit of 1\%, assuming no errors were found.
+	\item a conditional risk-limiting audit  would require about 16,000 ballots for a risk limit of 1\%, assuming no errors were found.
 \end{itemize}
 
 Most other states would probably be easier to audit as they do not seem to be as close (though Queensland is not far behind Tasmania).
