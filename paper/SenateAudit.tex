@@ -13,8 +13,8 @@
 
 %\newcommand{\VTNote}[1]{{\it(VT: #1)}}
 \newcommand{\VTNote}[1]{}
-\newcommand{\commentOut}{}
-
+\newcommand{\commentOut}[1]{}
+\newcommand\Mark[1]{\textsuperscript#1}
 
 \def\makeItShort{}
 
@@ -41,25 +41,64 @@
 %\renewcommand\Authands{ and }
 
 \title{Auditing Australian Senate Ballots}
-\author[1]{Michelle Blom}
-\author[2]{Berj Chilingirian}
-\author[ ]{Andrew Conway\thanks{Andrew Conway is a member of the Secular Party.   }}
-\author[1]{Chris Culnane}
-\author[ ]{Grahame Bowland\thanks{Grahame Bowland is a member of the Australian Greens.  His contribution to this project has consisted entirely of help in implementing the Australian Senate counting rules and facilitating Bayesian audits using his code. The techniques here are non-political. }}
-\author[2]{Zara Perumal}
-\author[2]{Ron Rivest}
-\author[3]{Philip Stark}
-\author[1]{Vanessa Teague}
-\affil[1]{Department of Computing and Information Systems, University of Melbourne.}
-\affil[2]{Massachusetts  Institute of Technology}
-\affil[3]{Department of Statistics, University of California Berkeley}  
+
+
+
+\author[1]{Berj Chilingirian\thanks{Authors are grouped by institution, in alphabetical order, and then listed in alphabetical order within each institution.}}
+\author[1]{Zara Perumal}
+\author[1]{Ronald L. Rivest} 
+\author[2]{\hspace{1cm}Grahame Bowland\thanks{Grahame Bowland is a member of the Australian Greens.  His contribution to this project has consisted entirely of help in implementing the Australian Senate counting rules and facilitating Bayesian audits using his code. The techniques here are non-political.}}
+\author[3]{Andrew Conway\thanks{Andrew Conway is a member of the Secular Party.   }}
+\author[4]{Philip B. Stark}
+\author[5]{\hspace{1cm}Michelle Blom}
+\author[5]{Chris Culnane}
+\author[5]{Vanessa Teague}
+
+\affil[1]{Computer Science and Artificial Intelligence Laboratory, 
+Massachusetts Institute of Technology.  \url{[berjc, zperumal, rivest]@mit.edu}}
+\affil[2]{\url{erinaceous.io} \\
+\url{grahame@angrygoats.net}}
+\affil[3]{Silicon Econometrics \\
+\url{andrewsa@greatcactus.org}}
+\affil[4]{Department of Statistics, University of California, Berkeley.  \url{stark@stat.berkeley.edu}}  
+\affil[5]{Department of Computing and Information Systems, University of Melbourne. \url{[michelle.blom, christopher.culnane, vjteague]@unimelb.edu.au}}
+
+\commentOut{
+\author{Berj Chilingirian, 
+Zara Perumal, 
+Ron Rivest \\
+{Massachusetts  Institute of Technology} \\
+\url{[berjc, zperumal, rivest]@mit.edu}
+}
+\author{Grahame Bowland\thanks{Grahame Bowland is a member of the Australian Greens.  His contribution to this project has consisted entirely of help in implementing the Australian Senate counting rules and facilitating Bayesian audits using his code. The techniques here are non-political. } \\ 
+\url{erinaceous.io} \\
+\url{grahame@angrygoats.net}}
+\author{Andrew Conway\thanks{Andrew Conway is a member of the Secular Party.} \\
+Silicon Econometrics \\
+\url{andrewsa@greatcactus.org}}
+\author{
+Philip Stark \\
+Department of Statistics \\
+University of California, Berkeley \\
+\url{stark@stat.berkeley.edu}}
+\author{Michelle Blom, Chris Culnane, Vanessa Teague \\
+Department of Computing and Information Systems \\
+University of Melbourne  \\
+\url{[michelle.blom, christopher.culnane, vjteague]@unimelb.edu.au}}
+}
 \maketitle
 
-\tableofcontents
+
+% Grahame: erinaceous.io
+
 
 \begin{abstract}
 We explain why the AEC should perform an audit of the paper Senate  ballots against the published preference data files.  We suggest four different post-election audit methods appropriate for Australian Senate elections.  We have developed prototype code for all of them and tested it on preference data from the 2016 election.  
 \end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
 
 \section{Introduction}
 A vote in the Australian Senate is a list of handwritten numbers indicating preferences for candidates.  Voters typically list about six preferences, but may list any number from one to more than 200.  Ballots are scanned, digitized and then counted electronically  using the Single Transferable Vote (STV) algorithm \cite{AECSenateCounting}.  
@@ -585,15 +624,23 @@ For example, consider the sample size needed to show with high confidence that t
 We'd have to find zero errors that mattered in a random sample of about 7,500 ballots to conclude that the population error rate was less than 0.0004, at 95\% confidence.
 }%end longVersion
 
+\section{Implementation Summary}
+All the tools necessary for conducting a Bayesian audit of Australian Senate votes are available as a Python package at \url{https://pypi.python.org/pypi/aus-senate-audit}, with code and instructions at \url{https://github.com/berjc/aus-senate-audit}.
+
+Code for searching for small successful manipulations is at \url{https://github.com/SiliconEconometrics/PublicService}.
+
+Code for computing relevant statistical bounds is at \url{https://gist.github.com/pbstark/58653bbc26f269d4588ea7cd5b2e12bf}.
+
 \section{Conclusion}
 Elections must come with evidence that the results are correct.  This work contributes some techniques for producing such evidence for the partly-automated Australian Senate count.
 
-All of the techniques discussed here can be implemented, immediately, using code already available or specifically produced as a prototype for this project.
+All of the audits discussed here can be conducted immediately, using code already available or specifically produced as a prototype for this project.
 
+\subsection{Future Work}
+In the future we could expand the precision with which we record errors and make inferences about their implications.
+We are also pursuing an easier user interface for administering the audit.
 
 \longVersion{
-\section{Future Work}
-In the future we could expand the precision with which we record errors and make inferences about their implications.
 
 
 On Thu, Aug 4, 2016 at 3:04 AM, Damjan Vukcevic <damjan@vukcevic.net> wrote:
