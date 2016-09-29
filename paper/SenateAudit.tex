@@ -275,13 +275,18 @@ probability distribution will be gradually corrected towards it.
 An alternative, simpler version amounts to a bootstrap, treating the
 population of reported ballots as if it is the (prior) probability
 distribution of ballots, and then seeing how often one gets the same
-result for samples drawn from that prior.  We have run this version of the audit 
-on the Senate outcome from 2016.  Tasmania is the closest: a sample size of about 
-34,000 ballots is needed before 95\% of trials produce the official outcome.  This gives an approximate
+result for samples drawn from that prior.  
+This gives an approximate
 indication of how much auditing of paper ballots would be necessary, assuming that 
 the paper ballots were very similar to the electronic votes.
-
-Table~\ref{tab:bootstrapping} shows the number of samples needed in the bootstrapping version of the Bayesian Audit, in order to get 95\% of trials to match the official outcome. Only Queensland and Tasmania require more than 10,000 samples.
+We have run this version of the audit 
+on the Senate outcome from 2016.  
+Table~\ref{tab:bootstrapping} shows the number of samples needed in the bootstrapping version, in order to get 95\% of trials to match the official outcome.
+Tasmania is the closest, and the only one that's really infeasible: a sample size of about 
+250,000 ballots is needed before 95\% of trials produce the official outcome, which is not much better than
+a complete re-examination of all ballots.  This is hardly surprising given the closeness of the result. 
+Queensland requires 23,000, which is still only a tiny fraction of the total ballots.  
+Apart from that, all the other states require only a few thousand samples.
 
 \begin{table}
 \begin{tabular}{lll}
@@ -291,7 +296,7 @@ NSW & 4.4 & 4.6 \\
 NT & 0.1 & 1.5 \\
 Qld & 2.7 & 23 \\
 SA & 1.1 & 3 \\
-Tas & 0.34 & 38 \\
+Tas & 0.34 & 250 \\
 Vic & 3.5 & 6 \\
 WA  & 1.4 & 9 \\
 \end{tabular}
@@ -300,7 +305,8 @@ WA  & 1.4 & 9 \\
 \end{table}
 
 
-We suggest a combination of the two: have a single short partial ballot in
+We suggest a combination of the bootstrapping method with the retrieval of
+paper ballots: have a single short partial ballot in
 favor of each candidate, combined with an empirical Bayes approach that
 specifies that only ballots of the forms already seen in the sample
 (or the short singleton ballots) may appear in the posterior distribution.
@@ -410,17 +416,17 @@ A risk limit of 5\% would require hand inspection of roughly 16,000 ballots, ass
 \subsection{Summary}
 These four different audit methods could each be conducted on the same dataset.  We would generate the sample by choosing random elements of the official preference data file, then fetching the corresponding paper ballot.  The Bayesian Audit and the simple capped scheme would then simply treat the paper ballots as the random sample.  The upper-bounds based scheme and the conditional risk limiting audiit would consider the errors relative to what had been reported.
 
-There are important details in exactly how the audit is conducted.  We suggest that the auditors not see the electronic vote before they are asked to digitize the paper---otherwise they are likely to be biased to agree.  However, we also suggest that they are notified in the case of a discrepancy and asked to double-check their result---this should increase the accuracy of the audit itself.
+There are important details in exactly how the audit is conducted.  We suggest that the auditors not see the electronic vote before they are asked to digitize the paper---otherwise they are likely to be biased to agree.  However, we also suggest that they are notified in the case of a discrepancy and asked to double-check their result---this should increase the accuracy of the audit itself.  Details of this process are interesting future work.  It is, of course, important that the audit itself should be software independent.
 
 If the rate of error is high then a high level of auditing is required.  With few or no errors, our best estimates of the necessary sample size for each technique applied to the Tasmanian 2016 Senate are:
 \begin{itemize}
-	\item for Bayesian audits, about 34,000 samples until 95\% of trials match the official outcome,
+	\item for Bayesian audits, about 250,000 samples until 95\% of trials match the official outcome,
 	\item for ``negative'' audits, a sample that found 3 or more errors out of 2500 ballots would give a 95\% confidence bound on the error rate (being big enough),
 	\item a fixed sample size of 500 or 1000, even with no errors, seems unlikely to be large enough to infer anything meaningful for Tasmania 2016, though it may be useful for other contexts,
-	\item a conditional risk-limiting audit  would require about 16,000 ballots for a risk limit of 1\%, assuming no errors were found.
+	\item a conditional risk-limiting audit  would require about 16,000 ballots for a risk limit of 5\%, assuming no errors were found.
 \end{itemize}
 
-Most other states would probably be easier to audit as they do not seem to be as close (though Queensland is not far behind Tasmania).
+Most other states would probably be easier to audit as they do not seem to be as close.
 
 \longVersion{
 \section{Bayesian Audits and how to use them in the Australian Senate}
